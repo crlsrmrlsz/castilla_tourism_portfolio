@@ -1,0 +1,171 @@
+-- objective --
+
+Now it is time to study and understand the data and prepare for further analysis.
+For that purpose I want you to assist me to identify indicators that reveal useful and actionable information from the data.
+Take into account that main final customer will be the 5 municipalities, so the data must be useful for them, they must see a clear benefit on paying for it.
+Municipality in Spain manages local police, local tourism promotion, people circulation on the city, traffic, public transportation, public parking, and tries to foster local tourism related companies.
+I am open to sell the data analysis to any other customer so please give me some ideas of possible clients willing to pay for this info (the area where i can get data is just Spain)
+
+I want you to define firstly the key indicators, that will be the starting point of the plan, to know what useful info can be obtained from these files, then we will continue creating easy to understand and insightful visualizations to be neatly presented in a simple and modern website using python under the hood and modern frontend technology.
+
+
+-- description of data available and data files--
+
+I will tell you the groups of data as described by the mobile phone operator that provides the data , and related to each group, the specific files and the columns available in them.
+For each column I will include a description of possible values between [], many columns repeat on several files so I will describe just once for ease.
+
+1. Unique Daily Visitors
+This metric provides the number of distinct individuals present in the area each day and over the entire study period. It accounts for the fact that the same person may return multiple times within a day—returning visitors are only counted once per day.
+- Timeframe: Counts include individuals present between 6 AM and 12 PM.
+- Purpose: Measure total tourist influx by tracking actual unique visitors. Segment results by visitor profiles (e.g., tourists, residents).
+- Use Case: Helps businesses and policymakers gauge real visitor numbers, tailor services, and assess the impact of marketing campaigns.
+- Files: columns
+    Diario: Date;DayOfWeek;Origin[Local or foreigner];ObservationArea[city, redundant];VisitorCategory[described later];Volume[number of people]
+    Diario_Edad: Diario + age[ranges: <18, 18-24,25-34,35-44, 45-54, 55-64 , >65]
+    Diario_Genero: Diario + genre[man or woman]
+    Diario_Municipio: Diario + Country[origin country of the persons], Origin is just foreigners
+    Diario_Nacionalidad: Diario + CityName[origin city of the persons], Origin is just locals (people from Castilla La Mancha)
+-ideas for data preparation:  may be possible to join these data in one single file?, this applies to the rest of the groups also.
+
+2. Visitor Count per 2-Hour Intervals
+This metric tracks the number of visitors present in the study area in 2-hour intervals from 6 AM to 12 AM. A person seen across multiple intervals is counted in each.
+- Example: A visitor present for 4 hours is counted in two intervals.
+- Purpose: Analyze arrival/departure patterns and hourly tourism impact.
+- Use Case: Optimize staffing, transportation, and security based on peak hours and seasonal trends.
+- Files: columns
+    Diario_2H: Date;DayOfWeek;Origin[Local or foreigner];ObservationArea[city, redundant];VisitorCategory[described later];Time[2h interval];Volume[number of people]
+    Diario_2H_Nacionalidad: Diario_2H columns + Country
+    Diario_2H_Municipio: Diario_2H columns + CityName
+
+3. Length of Stay
+This metric categorizes daily visitors by their duration of stay in the study area, segmented into 2-hour intervals.
+- Purpose: Understand visitor behavior by profile (e.g., tourists vs. residents).
+- Use Case: Adjust activity offerings and services based on stay patterns (e.g., short visits vs. extended stays).
+- Files: columns  in [] possible values
+    DuracionEstancia: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;LengthOfStay[<2h, 2-4, 4-6,6-8, 8-10, >10];Volume
+    DuracionEstancia_Nacionalidad:  DuracionEstancia + Country
+    DuracionEstancia_Municipio: DuracionEstancia+ CityName
+
+
+4. Overnight Visitor Count
+Measures the number of people staying overnight in the study area.
+- Purpose: Evaluate the area’s nighttime appeal and lodging distribution (commercial/non-commercial, regulated/unregulated).
+- Use Case: Helps lodging providers assess demand and compare performance.
+- Files: columns
+    Nocturno: Date;DayOfWeek;Origin;Gender;ObservationArea;VisitorCategory;Volume[refer to people staying that night]
+    Nocturno_Nacionalidad:  Nocturno + Country
+    Nocturno_Municipio: Nocturno+ CityName
+    Nocturno_Edad: Nocturno + age
+    Nocturno_Genero: Nocturno + genre
+
+5. Number of Consecutive Overnight Stays
+Tracks the length of stays for tourists and frequent visitors (counted on departure day), categorized as 1–13+ nights.
+- Purpose: Analyze tourist behavior (e.g., typical stay duration, origin).
+- Use Case: Share insights with hotels to benchmark performance and tailor marketing.
+- Files: columns
+    NocheEstancia: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;LengthOfStayNum[number of nights];Volume
+    NocheEstancia_Nacionalidad: NocheEstancia + Country
+    NocheEstancia_Municipio: NocheEstancia + CityName
+
+6. Arrivals & Departures
+- Arrivals: Tourists/frequent visitors who stayed overnight after not being detected in the area the two prior nights.
+- Departures: Those who stayed overnight but were not detected the two following nights.
+- Purpose: Understand visitor flow trends by segment.
+- Use Case: Optimize transit infrastructure and manage peak-period crowding.
+- Files: columns
+    Salida: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;Volume[number of people leaving]
+    Salida_Nacionalidad:  Salida + Country
+    Salida_Municipio: Salida+ CityName
+    Salida_Edad: Salida + age
+    Salida_Genero: Salida + genre
+    Llegada: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;Volume[number of people arriving]
+    Llegada_Nacionalidad:  Llegada + Country
+    Llegada_Municipio: Llegada+ CityName
+    Llegada_Edad: Llegada + age
+    Llegada_Genero: Llegada + genre
+
+7. Previous & Current Night Stay Analysis
+Tracks overnight mobility patterns between the study area and nearby regions (municipalities/provinces). Data can be aggregated daily or over a period.
+- Purpose: Understand accommodation choices and visitor routes.
+- Use Case:
+  - Improve infrastructure planning (e.g., roads, public transport).
+  - Target promotions to high-origin areas.
+  - Differentiate resident vs. non-resident travel habits.
+- Files: columns
+    LugarNoche_Vispera:Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;OvernightZoneMunicipalityEve;OvernightZoneProvinceEve;Volume
+    LugarNoche_Vispera_Nacionalidad:  LugarNoche_Vispera + Country
+    LugarNoche_Vispera_Municipio: LugarNoche_Vispera+ CityName
+    LugarNoche_Vispera_Edad: LugarNoche_Vispera + age
+    LugarNoche_Vispera_Genero: LugarNoche_Vispera + genre
+    LugarNoche_DiaVisita: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;OvernightZoneMunicipalityVisitDay;OvernightZoneProvinceVisitDay;Volume
+    LugarNoche_DiaVisita_Nacionalidad:  LugarNoche_DiaVisita + Country
+    LugarNoche_DiaVisita_Municipio: LugarNoche_DiaVisita+ CityName
+    LugarNoche_DiaVisita_Edad: LugarNoche_DiaVisita + age
+    LugarNoche_DiaVisita_Genero: LugarNoche_DiaVisita + genre
+
+8. Daily Activity Location Analysis
+Identifies the primary daytime areas visited by those who stayed overnight in the study area, focusing on nearby regions.
+- Purpose: Map daytime movement flows to optimize services and manage tourist traffic.
+- Use Case:
+  - Correlate with overnight stay data to analyze day-night travel trends.
+  - Anticipate demand for attractions, dining, and transport.
+- Files: columns:
+    LugarActividad_DiaVisita= Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;DailyZoneMunicipalityVisitDay[origin city name];DailyZoneProvinceVisitDay[origin province];Volume[number of visitors to that city who stayed the night in the ObservationArea]
+    LugarActividad_DiaVisita_Nacionalidad:  LugarActividad_DiaVisita + Country
+    LugarActividad_DiaVisita_Municipio: LugarActividad_DiaVisita+ CityName
+    LugarActividad_DiaVisita_Edad: LugarActividad_DiaVisita + age
+    LugarActividad_DiaVisita_Genero: LugarActividad_DiaVisita + genre
+    LugarActividad_Vispera: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;DailyZoneMunicipalityVisitDay[origin city name];DailyZoneProvinceVisitDay[origin province];Volume[number of visitors who was at DailyZoneMunicipalityVisitDay the previous day to stay night in ObservationArea]
+    LugarActividad_Vispera_Nacionalidad:  LugarActividad_Vispera + Country
+    LugarActividad_Vispera_Municipio: LugarActividad_Vispera+ CityName
+    LugarActividad_Vispera_Edad: LugarActividad_Vispera + age
+    LugarActividad_Vispera_Genero: LugarActividad_Vispera + genre
+
+
+--VisitorCategory--
+Along all the data files, there is a common column in almost every file, the VisitorCategory. This is the classification:
+
+* "Resident": A person who has spent more than 21 nights in the analyzed area over the last 8 weeks. In other words, someone is considered a resident of Gandía if their mobile phone was detected at night in Gandía at least 22 times in the last 56 nights (8 weeks).
+Examples:
+- Jorge lives and works in Valencia. He is counted as a resident of Valencia.
+- Elena is a French teacher in Cartagena and spends every summer in Benidorm at her late grandmother’s house. Since she has two months of vacation, Elena will be counted as a resident around mid-summer.
+
+* "Frequently Present": A person who spends fewer than 22 nights in the area over the last 8 weeks but has been detected at least once per week across 4 different weeks. In other words, someone is "frequently present" if they are observed in the area during four different weeks but with fewer than 22 total nights in the last 8 weeks.
+Example:
+- Laura is enrolled in a hybrid master's program in Valencia and stays overnight on Tuesdays and Thursdays in the Benimaclet neighborhood. Laura is considered "frequently present" in Benimaclet.
+
+* "Tourist": Someone who spends fewer than 22 nights and is observed in fewer than 4 different weeks over the last 8 weeks.
+Examples:
+- Nuria is from Xàbia but went out for drinks in Dénia on Saturday and returned at 5 AM. Since she spent most of the night in Dénia, she is counted as a tourist in Dénia with an origin in Xàbia.
+- Ivanna is from St. Petersburg and spends a couple of weeks each year in Torreblanca. She is considered a tourist.
+- Miguel is from Dénia but works in Barcelona. When he returns for Christmas to spend time with his family, he is counted as a tourist in Dénia (with Dénia as his origin since that’s where his phone contract was registered).
+
+* "Day Visitor" A person observed in the area during the day for more than 2 hours but not the night before or the night of the analysis. In other words, they are only seen during the day, with a presence exceeding 2 hours, but not recurrently.
+Examples:
+- Sofía is a sales representative for a pharmaceutical company and typically visits 2-3 towns to present new products or have lunch with clients. She is counted as a day visitor in towns where she doesn’t stay overnight and as a tourist where she does.
+- Alberto is vacationing on the Levante coast, staying in Calpe for a few days, and decides to try a recommended restaurant in Altea. On the day he visits, he is counted as a day visitor in Altea.
+
+* "Recurrent Day Visitor"*: A person present for more than 2 hours during the day on more than 5 days in the last 15. In other words, if someone visits the observed area more than 5 times in the last two weeks but only during the day (not overnight), they are a recurrent day visitor.
+Examples:
+- Isabel lives in Calpe but attends a school in Benidorm. She has classes Monday to Friday from 8:30 AM to 4:30 PM. During the school year, Isabel is a recurrent day visitor in Benidorm.
+- Ismael is a dentist who lives and works in Xàtiva but collaborates 3 days a week with another clinic in Dénia. He is a recurrent day visitor in Dénia.
+
+* "In Transit": A person observed in the area during the day for less than 2 hours and not seen the night before or the night of the analysis. In other words, they are passing through, differing from day visitors only in their shorter presence (<2 hours).
+Examples:
+- Marc works daily in Benidorm but is from Calpe. He picks up a coworker in Altea to carpool. Marc is counted as "in transit" in Altea.
+- Enrique is a truck driver who stops at a Valencia gas station to refuel and have coffee. He is counted as "in transit" in Valencia.
+
+* "Tourist/Frequently Present/Resident in Transit": A tourist, frequently present individual, or resident who spends less than 2 hours in the observation zone between 6 AM and 12 AM.
+
+### Clarifications:
+- "Day Visitor," "Recurrent Day Visitor," and "In Transit" do not spend the night in the observation zone. All other categories do spend the night there.
+- Any person present between 12 AM and 6 AM and "inactive" in the zone (predominantly in the observation area for more than 2 hours) is segmented as **Resident, Tourist, or Frequently Present**.
+- The determination of Day Visitor (>2h) vs. In Transit (<2h) is based on activity between 6 AM and 12 PM.
+
+--- date range --
+the data spans from june 2022 to november 2024
+
+
+Please analyze carefully all the data groups and its files and find useful indicators to extract from them.
+Then, please tell me next steps to clean, group, merge or whatever to do with the files so it is easier to work with them
+One of next steps will be to clean and check if data is correct, for example with data from INE in Spain that can confirm that the rough numbers of visitors given by this data are similar to INE data, which is presumable more accurate.
