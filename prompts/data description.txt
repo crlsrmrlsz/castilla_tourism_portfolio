@@ -121,6 +121,11 @@ Identifies the primary daytime areas visited by those who stayed overnight in th
     LugarActividad_Vispera_Edad: LugarActividad_Vispera + age
     LugarActividad_Vispera_Genero: LugarActividad_Vispera + genre
 
+9. Recurrency
+- Files:columns
+    Recurrencia: Date;DayOfWeek;Origin;ObservationArea;VisitorCategory;Recurrence[number of recurrent visitors];Volume
+    Recurrencia_Municipio: Recurrencia+ CityName
+    Recurrencia_Nacionalidad : Recurrencia+ Country
 
 --VisitorCategory--
 Along all the data files, there is a common column in almost every file, the VisitorCategory. This is the classification:
@@ -165,6 +170,10 @@ Examples:
 --- date range --
 the data spans from june 2022 to november 2024
 
+-- data granularity and restrictions--
+the data is provided for whole municipal areas, not any smaller.
+Data cannot be obtained in real time, just historical and previous month the soonest.
+A visitor cannot be identified, all data is anonymous, so i cannot know for example if a visitor comes and goes and come back again next year.
 
 Please analyze carefully all the data groups and its files and find useful indicators to extract from them.
 Then, please tell me next steps to clean, group, merge or whatever to do with the files so it is easier to work with them
