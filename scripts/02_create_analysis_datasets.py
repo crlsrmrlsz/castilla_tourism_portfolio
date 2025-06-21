@@ -20,26 +20,18 @@ LOCATIONS_TO_PROCESS = [
     "Albacete Municipio", "Ciudad Real Municipio", "Cuenca Municipio",
     "Guadalajara Municipio", "Toledo Municipio", "CCAA Castilla-La Mancha"
 ]
-# --- THIS LIST IS NOW CORRECTED with normalized names ---
 COLUMNS_TO_DROP = ['diadelasemana', 'zonaobservacion']
-# ---------------------------------------------------------
 ORIGIN_FILES = ['Municipio', 'Nacionalidad']
 DEMOGRAPHIC_FILES = ['Edad', 'Genero']
 
 
 def clean_dataframe(df):
-    """
-    Applies standard cleaning steps to a dataframe:
-    1. Normalizes accents and special characters in column names.
-    2. Converts column names to lowercase.
-    3. Drops specified redundant columns.
-    """
+    """Applies standard cleaning steps to a dataframe."""
     normalized_cols = [
         ''.join(c for c in unicodedata.normalize('NFD', col) if unicodedata.category(c) != 'Mn').lower()
         for col in df.columns
     ]
     df.columns = normalized_cols
-
     for col in COLUMNS_TO_DROP:
         if col in df.columns:
             df = df.drop(columns=[col])
@@ -47,9 +39,7 @@ def clean_dataframe(df):
 
 
 def process_file_group(base_name: str, file_paths: list, output_dir: Path):
-    """
-    Creates two analysis files for a group: one for origin, one for demographics.
-    """
+    """Creates two analysis files for a group: one for origin, one for demographics."""
     logging.info(f"  - Processing file group: '{base_name}'")
 
     base_file_path = next((p for p in file_paths if f"_{p.stem.split('_')[-1]}" not in [f"_{s}" for s in
@@ -88,11 +78,9 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
         except Exception as e:
             logging.error(f"      - Failed to merge {detail_path.name}. Error: {e}")
 
-    origin_df['origen_detalle'] = origin_df['pais'].fillna(
-        origin_df['nombremunicipio']) if 'pais' in origin_df and 'nombremunicipio' in origin_df else (
-        origin_df['pais'] if 'pais' in origin_df else origin_df.get('nombremunicipio'))
-    origin_df['provincia_detalle'] = origin_df['nombreprovincia'] if 'nombreprovincia' in origin_df else pd.Series(
-        dtype='object')
+    origin_df['origen_detalle'] = origin_df.get('pais', pd.Series(dtype='object')).fillna(
+        origin_df.get('nombremunicipio'))
+    origin_df['provincia_detalle'] = origin_df.get('nombreprovincia', pd.Series(dtype='object'))
 
     date_col = next((col for col in origin_df.columns if 'fecha' in col), None)
     if date_col:
@@ -117,15 +105,13 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
             detail_df = clean_dataframe(detail_df)
 
             pivot_col = suffix.lower()
-            if pivot_col not in detail_df.columns:
-                logging.warning(f"      - Pivot column '{pivot_col}' not found in {detail_path.name}. Skipping pivot.")
-                continue
+            if pivot_col not in detail_df.columns: continue
 
             pivot_keys = [k for k in detail_df.columns if k not in [pivot_col, 'volumen']]
             pivoted = detail_df.pivot_table(index=pivot_keys, columns=pivot_col, values='volumen').reset_index()
             pivoted.columns.name = None
             pivoted = pivoted.rename(
-                columns={col: f'volumen_{pivot_col}_{str(col).lower()}' for col in pivoted.columns if
+                columns={str(col): f'volumen_{pivot_col}_{str(col).lower()}' for col in pivoted.columns if
                          col not in pivot_keys})
 
             join_keys = [col for col in demographics_df.columns if col in pivoted.columns and col != 'volumen_total']
@@ -146,7 +132,6 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
 
 
 def main():
-    """Main function to create analysis-ready datasets."""
     logging.info("Starting script to create analysis-ready datasets.")
     ANALYTICS_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
