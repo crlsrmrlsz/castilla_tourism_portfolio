@@ -23,8 +23,8 @@ This metric provides the number of distinct individuals present in the area each
     Diario: Date;DayOfWeek;Origin[Local or foreigner];ObservationArea[city, redundant];VisitorCategory[described later];Volume[number of people]
     Diario_Edad: Diario + age[ranges: <18, 18-24,25-34,35-44, 45-54, 55-64 , >65]
     Diario_Genero: Diario + genre[man or woman]
-    Diario_Municipio: Diario + Country[origin country of the persons], Origin is just foreigners
-    Diario_Nacionalidad: Diario + CityName[origin city of the persons], Origin is just locals (people from Castilla La Mancha)
+    Diario_Municipio: Diario + CityName[origin city of the persons], Origin is just locals (people from Castilla La Mancha)
+    Diario_Nacionalidad: Diario + Country[origin country of the persons], Origin is just foreigners
 -ideas for data preparation:  may be possible to join these data in one single file?, this applies to the rest of the groups also.
 
 2. Visitor Count per 2-Hour Intervals
