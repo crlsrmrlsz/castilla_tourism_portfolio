@@ -42,9 +42,8 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
     """Creates two analysis files for a group: one for origin, one for demographics."""
     logging.info(f"  - Processing file group: '{base_name}'")
 
-    base_file_path = next((p for p in file_paths if f"_{p.stem.split('_')[-1]}" not in [f"_{s}" for s in
-                                                                                        ORIGIN_FILES + DEMOGRAPHIC_FILES] and p.stem == base_name),
-                          None)
+    base_file_path = next((p for p in file_paths if p.name == f"{base_name}.parquet"), None)
+
     if not base_file_path:
         logging.warning(f"    - Base file for group '{base_name}' not found. Skipping.")
         return
@@ -78,9 +77,14 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
         except Exception as e:
             logging.error(f"      - Failed to merge {detail_path.name}. Error: {e}")
 
-    origin_df['origen_detalle'] = origin_df.get('pais', pd.Series(dtype='object')).fillna(
-        origin_df.get('nombremunicipio'))
-    origin_df['provincia_detalle'] = origin_df.get('nombreprovincia', pd.Series(dtype='object'))
+    origin_df['origen_detalle'] = origin_df['pais'] if 'pais' in origin_df.columns else pd.Series(dtype='object')
+    if 'nombremunicipio' in origin_df.columns:
+        origin_df['origen_detalle'] = origin_df['origen_detalle'].fillna(origin_df['nombremunicipio'])
+    origin_df['provincia_detalle'] = origin_df[
+        'nombreprovincia'] if 'nombreprovincia' in origin_df.columns else pd.Series(dtype='object')
+
+    columns_to_drop_after_unification = ['pais', 'nombremunicipio', 'nombreprovincia']
+    origin_df = origin_df.drop(columns=[col for col in columns_to_drop_after_unification if col in origin_df.columns])
 
     date_col = next((col for col in origin_df.columns if 'fecha' in col), None)
     if date_col:
@@ -119,50 +123,11 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
         except Exception as e:
             logging.error(f"      - Failed to pivot/merge {detail_path.name}. Error: {e}")
 
-    date_col_demo = next((col for col in demographics_df.columns if 'fecha' in col), None)
-    if date_col_demo and 'year' not in demographics_df.columns:
-        demographics_df[date_col_demo] = pd.to_datetime(demographics_df[date_col_demo])
-        demographics_df['year'] = demographics_df[date_col_demo].dt.year
-        demographics_df['month'] = demographics_df[date_col_demo].dt.month
-        demographics_df['weekday'] = demographics_df[date_col_demo].dt.day_name()
+    # --- NEW: Filter out 'Extranjero' rows as they have no demographic data ---
+    if 'origen' in demographics_df.columns:
+        logging.info("    - Filtering out 'Extranjero' rows from demographics dataset.")
+        rows_to_keep = demographics_df['origen'].isin(['Local', 'NoLocal'])
+        demographics_df = demographics_df[rows_to_keep].copy()
+    # --- END OF NEW BLOCK ---
 
-    output_path_demographics = output_dir / f"{base_name}_demographics_analysis.parquet"
-    demographics_df.to_parquet(output_path_demographics, index=False)
-    logging.info(f"    -> Saved Demographics dataset: {output_path_demographics.name}\n")
-
-
-def main():
-    logging.info("Starting script to create analysis-ready datasets.")
-    ANALYTICS_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    for location in LOCATIONS_TO_PROCESS:
-        location_path = PROCESSED_DATA_DIR / location
-        if not location_path.is_dir():
-            logging.warning(f"Directory for location '{location}' not found. Skipping.")
-            continue
-
-        logging.info(f"--- Processing location: {location} ---")
-
-        file_groups = defaultdict(list)
-        files_to_process = [f for f in location_path.glob('*.parquet') if
-                            "semana" not in f.name.lower() and "mes" not in f.name.lower()]
-
-        for f in files_to_process:
-            base_name = f.stem
-            for suffix in ORIGIN_FILES + DEMOGRAPHIC_FILES:
-                if f.stem.endswith(f"_{suffix}"):
-                    base_name = f.stem[:-len(suffix) - 1]
-                    break
-            file_groups[base_name].append(f)
-
-        output_dir = ANALYTICS_DATA_DIR / location
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        for base_name, file_paths in file_groups.items():
-            process_file_group(base_name, file_paths, output_dir)
-
-    logging.info("--- Pipeline finished successfully. ---")
-
-
-if __name__ == "__main__":
-    main()
+    date_col_demo = next((col for col in demographics_df.columns if 'fecha'
