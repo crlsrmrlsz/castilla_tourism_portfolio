@@ -130,4 +130,48 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
         demographics_df = demographics_df[rows_to_keep].copy()
     # --- END OF NEW BLOCK ---
 
-    date_col_demo = next((col for col in demographics_df.columns if 'fecha'
+    date_col_demo = next((col for col in demographics_df.columns if 'fecha' in col), None)
+    if date_col_demo and 'year' not in demographics_df.columns:
+        demographics_df[date_col_demo] = pd.to_datetime(demographics_df[date_col_demo])
+        demographics_df['year'] = demographics_df[date_col_demo].dt.year
+        demographics_df['month'] = demographics_df[date_col_demo].dt.month
+        demographics_df['weekday'] = demographics_df[date_col_demo].dt.day_name()
+
+    output_path_demographics = output_dir / f"{base_name}_demographics_analysis.parquet"
+    demographics_df.to_parquet(output_path_demographics, index=False)
+    logging.info(f"    -> Saved Demographics dataset: {output_path_demographics.name}\n")
+
+
+def main():
+    """Main function to create analysis-ready datasets."""
+    logging.info("Starting script to create analysis-ready datasets.")
+    ANALYTICS_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    for location in LOCATIONS_TO_PROCESS:
+        location_path = PROCESSED_DATA_DIR / location
+        if not location_path.is_dir():
+            logging.warning(f"Directory for location '{location}' not found. Skipping.")
+            continue
+
+        logging.info(f"--- Processing location: {location} ---")
+
+        file_groups = defaultdict(list)
+        files_to_process = [f for f in location_path.glob('*.parquet') if
+                            "semana" not in f.name.lower() and "mes" not in f.name.lower()]
+
+        for f in files_to_process:
+            match = re.match(r'(.+?)(?:_Nacionalidad|_Municipio|_Edad|_Genero)?$', f.stem)
+            base_name = match.group(1) if match else f.stem
+            file_groups[base_name].append(f)
+
+        output_dir = ANALYTICS_DATA_DIR / location
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        for base_name, file_paths in file_groups.items():
+            process_file_group(base_name, file_paths, output_dir)
+
+    logging.info("--- Pipeline finished successfully. ---")
+
+
+if __name__ == "__main__":
+    main()
