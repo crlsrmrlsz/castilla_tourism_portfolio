@@ -123,13 +123,6 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
         except Exception as e:
             logging.error(f"      - Failed to pivot/merge {detail_path.name}. Error: {e}")
 
-    # --- NEW: Filter out 'Extranjero' rows as they have no demographic data ---
-    if 'origen' in demographics_df.columns:
-        logging.info("    - Filtering out 'Extranjero' rows from demographics dataset.")
-        rows_to_keep = demographics_df['origen'].isin(['Local', 'NoLocal'])
-        demographics_df = demographics_df[rows_to_keep].copy()
-    # --- END OF NEW BLOCK ---
-
     date_col_demo = next((col for col in demographics_df.columns if 'fecha' in col), None)
     if date_col_demo and 'year' not in demographics_df.columns:
         demographics_df[date_col_demo] = pd.to_datetime(demographics_df[date_col_demo])
