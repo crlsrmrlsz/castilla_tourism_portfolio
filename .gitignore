@@ -173,9 +173,20 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# Ignore data files
-data/
-*.csv
+# --- Data Files ---
+# Ignore all contents of the data folders to protect proprietary data
+# and keep the repository small.
+/data/raw/*
+/data/processed/*
+/data/analytics/*
+
+# Keep the folder structure by not ignoring .gitkeep files.
+# Place an empty .gitkeep file in any directory you want Git to track,
+# e.g., in data/raw/, data/raw/ine_data/, data/analytics/, etc.
+!/data/raw/.gitkeep
+!/data/processed/.gitkeep
+!/data/analytics/.gitkeep
+!/data/raw/*/.gitkeep
 
 # Ignore IDE and OS specific files
 .idea/
