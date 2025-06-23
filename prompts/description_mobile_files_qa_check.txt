@@ -1,0 +1,71 @@
+### Prompt Describing Mobile Data for Analysis and Visualization
+
+Here is a detailed description of the mobile provider datasets available for our analysis. The goal is to compare this mobile data with public statistical data (from INE, Padrón, etc.) to gain a deeper understanding of population and tourism dynamics in Castilla-La Mancha. The final output should be Python code that performs these comparisons and generates insightful graphics.
+
+**Overall Data Context:**
+The mobile data is aggregated from user devices and provides a dynamic view of the population. It is available for each of the 5 provincial capitals and for the entire Castilla-La Mancha community (`CCAA Castilla-La Mancha`). The data is split into three main concepts:
+1.  **Nocturno:** Monthly unique counts of users staying overnight, representing the most stable population of residents and tourists.
+2.  **Diario:** Monthly unique counts of users present during the day, capturing a broader population including commuters and day-trippers.
+3.  **NocheEstancia:** Daily data detailing the length of stay for overnight visitors.
+
+---
+
+### SET 1: Monthly Overnight Population (`Nocturno` Files)
+
+These files are the most crucial for comparing against official population and tourism statistics. They represent the monthly unique users who spend the night in the region.
+
+* **File 1: `Nocturno_Mes_demographics_analysis.parquet`**
+    * **Description:** Provides a demographic breakdown (age and gender) of the overnight population, segmented by high-level origin. The demographic data is in a "wide" format, with separate columns for each age/gender volume.
+    * **Data Dictionary:**
+        * `mes`: The month of the data, in `YYYYMM` format (e.g., `202206`).
+        * `origen`: The primary user segment:
+            * `Local`: Users whose home location is within Castilla-La Mancha.
+            * `NoLocal`: Users from other provinces in Spain (domestic tourists).
+            * `Extranjero`: Users from other countries (foreign tourists).
+        * `categoriadelvisitante`: A sub-category providing more detail:
+            * `Residente`: The core resident population (use in combination with `origen: Local`).
+            * `Turista`: The core tourist population (use in combination with `origen: NoLocal` or `Extranjero`).
+            * `Habitualmente presente`: Likely second-home owners or long-term visitors.
+        * `volumen_total`: The total number of unique users for the month in that segment.
+        * `volumen_edad_*`: Columns containing the number of users within specific age brackets (e.g., `volumen_edad_18-24`).
+        * `volumen_genero_*`: Columns for male (`_h`) and female (`_m`) users.
+    * **Potential Comparison Points:**
+        * The `Nocturno` data for `origen: Local` and `categoriadelvisitante: Residente` should be compared with the annual population figures from the public **Padrón** and **ECP** files to validate the resident baseline.
+        * The tourist segments (`NoLocal` and `Extranjero`) can be compared with the monthly **EOH** data (`Viajeros` and `Pernoctaciones`) from the public sources.
+
+* **File 2: `Nocturno_Mes_origin_analysis.parquet`**
+    * **Description:** Provides a detailed geographical breakdown of the origin of the overnight population.
+    * **Data Dictionary:**
+        * `origen_detalle`: The specific place of origin (e.g., `Alemania`, `Madrid`, `Andalucía`). This provides the detail for the `origen` categories.
+        * `provincia_detalle`: The specific province of origin for national visitors.
+    * **Potential Comparison Points:**
+        * The sum of `Extranjero` visitors over 12 months can be benchmarked against the annual **FRONTUR** data.
+        * The breakdown by nationality can be analyzed for tourism marketing insights.
+
+---
+
+### SET 2: Monthly Daytime Population (`Diario` Files)
+
+These files describe the total unique population present during the day, which is naturally larger than the overnight population as it includes commuters and day-trippers.
+
+* **Files: `Diario_Mes_demographics_analysis.parquet` & `Diario_Mes_origin_analysis.parquet`**
+    * **Description:** These files share the same structure as their `Nocturno` counterparts but measure daytime presence.
+    * **Key Differences:** The `categoriadelvisitante` column includes additional values like `En tránsito` and `Excursionista`, which are crucial for understanding mobility patterns that are not captured in overnight data.
+    * **Potential Comparison Points:** While there is no direct public data equivalent for a "daytime" population, this data can be used to show the total "load" on a province's infrastructure and services, providing context to the tourism figures.
+
+---
+
+### SET 3: Length of Stay Analysis (`NocheEstancia` Files)
+
+These files provide daily data on the duration of stays for overnight visitors, which is essential for understanding visitor behavior.
+
+* **Files: `NocheEstancia_demographics_analysis.parquet` & `NocheEstancia_origin_analysis.parquet`**
+    * **Description:** These files provide daily counts of visitors based on how many nights they stay.
+    * **Data Dictionary:**
+        * `fecha`: The specific date of the record (e.g., `2022-06-01`).
+        * `duracionestancia`: A categorical description of the stay length (e.g., `1 Noche`, `2 Noches`, `12 Noches`).
+        * `duracionestancianum`: The numerical version of the stay length.
+        * `volumen_total`: The number of users who stayed for that specific duration.
+    * **Potential Comparison Points:**
+        * By calculating a weighted average of `duracionestancianum` from this data, we can derive the **average length of stay** for mobile-data tourists.
+        * This derived average can be directly compared to the average length of stay calculated from public data (i.e., **EOH Pernoctaciones / EOH Viajeros**). This is a key point of comparison.

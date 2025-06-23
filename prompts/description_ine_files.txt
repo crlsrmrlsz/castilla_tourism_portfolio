@@ -1,14 +1,21 @@
-Here is a description of the available statistical data files. This summary is intended to be used as a prompt for a Large Language Model to understand the context of each file for data analysis and visualization tasks.
+Here is a description of the available statistical data files.
 
 ### SET 1: Population by Age (ECP Files)
 
 * **File Names:** `ECP_CLM_2022_enero.csv`, `ECP_CLM_2023_enero.csv`, `ECP_CLM_2024_enero.csv`
-* **Description:** This set of files contains detailed population data from the `Estadística de Padrón Continuo` (Continuous Population Register). Each file corresponds to the month of January for a specific year (2022, 2023, 2024).
+* **Description:** This set of files contains detailed population data from the `Estadística de Padrón Continuo` (Continuous Population Register). Each file corresponds to the month of January for a specific year.
 * **Columns:**
     * `Edad`: The primary column, listing single years of age from "0 años" to "100 y más años".
     * Geographical Columns: `ALBACETE`, `CIUDAD REAL`, `CUENCA`, `GUADALAJARA`, `TOLEDO`, and totals for `CASTILLA-LA MANCHA` and `ESPAÑA`.
     * Sub-columns: Each geographical area is broken down by `Total`, `Hombres` (Men), and `Mujeres` (Women).
-* **Meaning:** These files provide a granular, yearly snapshot of the population structure, broken down by single year of age, gender, and geographical area (provinces of Castilla-La Mancha, the autonomous community total, and the national total).
+* **Meaning:** These files provide a granular, yearly snapshot of the population structure, broken down by single year of age, gender, and geographical area.
+* **Example Data (from ECP_CLM_2023_enero.csv):**
+    ```
+    Edad;ALBACETE;Total;Hombres;Mujeres;CIUDAD REAL;Total;Hombres;Mujeres;...
+    0 años;2.662;1.390;1.272;3.409;1.787;1.622;...
+    1 año;2.798;1.454;1.344;3.611;1.843;1.768;...
+    2 años;2.790;1.414;1.376;3.455;1.789;1.666;...
+    ```
 
 ### SET 2: Annual Municipal Population (Padrón Files)
 
@@ -16,6 +23,15 @@ Here is a description of the available statistical data files. This summary is i
 * **Description:** This set of files provides annual population data from the `Padrón Municipal` (Municipal Register) for each of the five provincial capitals of Castilla-La Mancha (AB: Albacete, CR: Ciudad Real, CU: Cuenca, GU: Guadalajara, TO: Toledo).
 * **Columns:** `Municipios` (Municipalities), `Sexo` (Sex), `Periodo` (Period), `Total`.
 * **Meaning:** Each file shows the total registered population in a specific capital city for the years 2022 to 2024, with data broken down by `Hombres` (Men), `Mujeres` (Women), and `Total`.
+* **Example Data (from INE_TO_padron_genero_anual.csv):**
+    ```
+    Municipios;Sexo;Periodo;Total
+    45 Toledo;Total;2024;740.148
+    45 Toledo;Total;2023;728.496
+    45 Toledo;Hombres;2024;371.995
+    45 Toledo;Hombres;2023;366.012
+    45 Toledo;Mujeres;2024;368.153
+    ```
 
 ### SET 3: Foreign Tourism - Annual (FRONTUR File)
 
@@ -23,6 +39,13 @@ Here is a description of the available statistical data files. This summary is i
 * **Description:** This file contains data from the INE's FRONTUR survey (Survey on Tourist Movement in Borders), which tracks the number of international visitors.
 * **Columns:** `Comunidades autónomas` (Autonomous Communities), `Tipo de dato` (Data Type), `Periodo` (Period), `Total`.
 * **Meaning:** The file provides the total number of foreign tourists who visited the autonomous community of Castilla-La Mancha annually for the years 2022, 2023, and 2024.
+* **Example Data (full file content):**
+    ```
+    Comunidades autónomas;Tipo de dato;Periodo;Total
+    08 Castilla - La Mancha;Dato base;2024;235.716
+    08 Castilla - La Mancha;Dato base;2023;217.062
+    08 Castilla - La Mancha;Dato base;2022;200.063
+    ```
 
 ### SET 4: Hotel Occupancy - Monthly (EOH File)
 
@@ -33,3 +56,18 @@ Here is a description of the available statistical data files. This summary is i
     * `Viajeros`: The number of people checking into hotels.
     * `Pernoctaciones`: The total number of nights spent by travelers in hotels.
     The data is also segmented by the traveler's origin: `Residentes en España` (domestic tourists) and `Residentes en el Extranjero` (foreign tourists).
+* **Example Data (showing different data slices):**
+    ```
+    Comunidades y Ciudades Autónomas;Provincias;Viajeros y pernoctaciones;Residencia: Nivel 2;Periodo;Total
+    08 Castilla - La Mancha;;Viajero;Total;2024M01;121.535
+    08 Castilla - La Mancha;;Viajero;Residentes en España;2024M01;100.490
+    08 Castilla - La Mancha;;Viajero;Residentes en el Extranjero;2024M01;21.046
+    08 Castilla - La Mancha;;Pernoctaciones;Total;2024M01;210.232
+    08 Castilla - La Mancha;02 Albacete;Viajero;Total;2024M01;19.626
+    08 Castilla - La Mancha;02 Albacete;Pernoctaciones;Total;2024M01;34.206
+    ```
+
+In summary: we have several key public datasets that can be correlated with mobile data to create a comprehensive picture of population and tourism dynamics.
+We can establish a baseline of the resident population using the annual Padrón and ECP files, which detail the number of inhabitants by gender and age in each province.
+This baseline would be the public data equivalent to the "resident" category identified in the mobile data.
+For tourism, the monthly Encuesta de Ocupación Hotelera (EOH) provides two crucial metrics: Viajeros (travelers checking in) and Pernoctaciones (overnight stays). The Pernoctaciones data, which is broken down by Spanish and foreign residents, can be directly related to the "Nocturno" (overnight) category for the tourist segment in the mobile data. Similarly, the number of Viajeros offers a monthly count of tourist arrivals that can be compared against the volume of non-resident devices. Finally, the annual FRONTUR data on foreign visitor arrivals can serve as a yearly sanity check for the aggregated total of international tourists captured by the mobile provider.
