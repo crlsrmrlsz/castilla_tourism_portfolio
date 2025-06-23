@@ -17,7 +17,7 @@ ANALYTICS_DATA_DIR = PROJECT_ROOT / "data" / "analytics"
 
 # Tolerance for float comparisons. We check if the sum of parts is > total.
 # A small tolerance prevents warnings for minor floating point differences.
-TOLERANCE = 1.05  # Allows sum of parts to be 1% greater than total before warning
+TOLERANCE = 1.05  # Allows sum of parts to be 5% greater than total before warning
 
 
 def validate_origin_file(df, file_name):
