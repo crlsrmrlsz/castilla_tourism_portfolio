@@ -1,0 +1,184 @@
+# Prompt: Data Strategy and Product Definition for a Municipal Intelligence Platform
+
+**-- Role --**
+
+You are a Senior Data Strategist and Product Manager. Your expertise lies in translating raw data into valuable, commercial data products. You are skilled at identifying key performance indicators (KPIs), defining data architecture, and aligning product features with customer needs.
+
+**## 1. Project Context**
+
+You are tasked with defining the strategic foundation for a new data analytics product.
+
+**### Primary Goal:**
+To develop a commercial data analytics product that provides Spanish municipalities with actionable intelligence to optimize public services, enhance tourism strategy, and improve urban management. The product will ultimately be a web-based dashboard with intuitive visualizations powered by a Python backend.
+
+**### Target Customers & Value Proposition:**
+* **Primary Customer (Initial Focus):** 5 Spanish Municipalities.
+    * **Their Responsibilities:** Managing local police, tourism promotion, urban mobility (people circulation, traffic, public transport, parking), and fostering local tourism-related businesses.
+    * **Our Value Proposition:** We provide data-driven answers to their most critical operational questions: Where do our visitors come from? When do they arrive? How long do they stay? Where do they move? This empowers them to allocate resources efficiently, maximize tourism revenue, and improve the quality of life for residents. The benefit must be clear enough to justify their investment.
+* **Secondary Customers (Market Expansion):**
+    * Hotel and Restaurant Associations
+    * Retail Chains & Shopping Centers
+    * Real Estate Developers and Investors
+    * Transportation Companies (Bus, Train)
+    * Large-scale Event Organizers
+    * Regional and Provincial Governments
+
+**### Project Phases:**
+The project will be executed in four strategic phases:
+1.  **Phase 1 (Your Current Task):** Indicator Definition & Data Strategy.
+2.  **Phase 2:** Data Architecture & ETL Implementation.
+3.  **Phase 3:** Product & Dashboard Development.
+4.  **Phase 4:** Validation, Refinement, and Go-to-Market.
+
+**## 2. Core Asset: The Data**
+
+This is the raw material for the product. Analyze it carefully.
+
+**### General Data Characteristics:**
+* **Source:** Anonymized mobile phone operator data.
+* **Geographic Scope:** Spain.
+* **Timeframe:** June 2022 to November 2024.
+* **Granularity:** Data is aggregated at the municipal level. No smaller area analysis is possible.
+* **Timeliness:** Historical data only. The most recent data available is for the previous month.
+* **Anonymity:** All data is fully anonymized. Individual users cannot be tracked over long periods (e.g., year-over-year return visits).
+
+**### Data Groups & File Definitions:**
+
+Below are the 9 groups of data files available.
+
+**1. Unique Daily Visitors**
+* **Description:** The number of distinct individuals in the area daily (6 AM - 12 AM). Visitors are counted only once per day, regardless of re-entry.
+* **Use Case:** Gauge real visitor numbers, tailor services, and assess marketing impact.
+* **Files & Schema:**
+    * `Diario`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; Volume`
+    * `Diario_Edad`: `(Diario columns); age`
+    * `Diario_Genero`: `(Diario columns); genre`
+    * `Diario_Municipio`: `(Diario columns); CityName` (for national visitors)
+    * `Diario_Nacionalidad`: `(Diario columns); Country` (for foreign visitors)
+
+**2. Visitor Count per 2-Hour Intervals**
+* **Description:** The number of visitors present in 2-hour intervals (6 AM - 12 AM). A person is counted in each interval they are present.
+* **Use Case:** Optimize staffing, transportation, and security based on peak hours.
+* **Files & Schema:**
+    * `Diario_2H`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; Time; Volume`
+    * `Diario_2H_Nacionalidad`: `(Diario_2H columns); Country`
+    * `Diario_2H_Municipio`: `(Diario_2H columns); CityName`
+
+**3. Length of Stay (Daytime)**
+* **Description:** Categorizes daily visitors by their duration of stay in 2-hour buckets.
+* **Use Case:** Adjust activity offerings based on whether visitors make short or extended day trips.
+* **Files & Schema:**
+    * `DuracionEstancia`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; LengthOfStay; Volume`
+    * `DuracionEstancia_Nacionalidad`: `(DuracionEstancia columns); Country`
+    * `DuracionEstancia_Municipio`: `(DuracionEstancia columns); CityName`
+
+**4. Overnight Visitor Count**
+* **Description:** The number of people staying overnight in the study area.
+* **Use Case:** Help lodging providers assess demand and performance.
+* **Files & Schema:**
+    * `Nocturno`: `Date; DayOfWeek; Origin; Gender; ObservationArea; VisitorCategory; Volume`
+    * `Nocturno_Nacionalidad`: `(Nocturno columns); Country`
+    * `Nocturno_Municipio`: `(Nocturno columns); CityName`
+    * `Nocturno_Edad`: `(Nocturno columns); age`
+    * `Nocturno_Genero`: `(Nocturno columns); genre`
+
+**5. Number of Consecutive Overnight Stays**
+* **Description:** Tracks the total length of stay (in nights) for tourists and frequent visitors, counted on their departure day.
+* **Use Case:** Inform hotels about typical stay durations to benchmark and tailor marketing.
+* **Files & Schema:**
+    * `NocheEstancia`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; LengthOfStayNum; Volume`
+    * `NocheEstancia_Nacionalidad`: `(NocheEstancia columns); Country`
+    * `NocheEstancia_Municipio`: `(NocheEstancia columns); CityName`
+
+**6. Arrivals & Departures**
+* **Description:** Tracks new overnight arrivals and final departures.
+* **Use Case:** Understand visitor churn and flow to manage transit infrastructure during peak check-in/check-out periods.
+* **Files & Schema:**
+    * `Salida`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; Volume` (and its variations by _Nacionalidad, _Municipio, _Edad, _Genero)
+    * `Llegada`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; Volume` (and its variations by _Nacionalidad, _Municipio, _Edad, _Genero)
+
+**7. Previous & Next Night Stay Analysis**
+* **Description:** Tracks visitor mobility between the study area and nearby regions for overnight stays.
+* **Use Case:** Improve infrastructure planning and target promotions to high-origin areas.
+* **Files & Schema:**
+    * `LugarNoche_Vispera`: `...; OvernightZoneMunicipalityEve; OvernightZoneProvinceEve; Volume` (and variations)
+    * `LugarNoche_DiaVisita`: `...; OvernightZoneMunicipalityVisitDay; OvernightZoneProvinceVisitDay; Volume` (and variations)
+
+**8. Daily Activity Location Analysis**
+* **Description:** Identifies the primary daytime areas visited by people who stayed overnight in the study area.
+* **Use Case:** Map daytime travel flows to anticipate demand for attractions, dining, and transport in surrounding areas.
+* **Files & Schema:**
+    * `LugarActividad_DiaVisita`: `...; DailyZoneMunicipalityVisitDay; DailyZoneProvinceVisitDay; Volume` (and variations)
+    * `LugarActividad_Vispera`: `...; DailyZoneMunicipalityVisitDay; DailyZoneProvinceVisitDay; Volume` (and variations)
+
+**9. Recurrency**
+* **Description:** Tracks the number of recurring visitors.
+* **Use Case:** Measure visitor loyalty.
+* **Files & Schema:**
+    * `Recurrencia`: `Date; DayOfWeek; Origin; ObservationArea; VisitorCategory; Recurrence; Volume`
+    * `Recurrencia_Municipio`: `(Recurrencia columns); CityName`
+    * `Recurrencia_Nacionalidad`: `(Recurrencia columns); Country`
+
+**### Key Concept: VisitorCategory Classification**
+
+This classification is CRITICAL. It is the core segmentation logic.
+
+* **"Resident"**
+    * **Rule:** Spends > 21 nights in the area over the last 8 weeks.
+    * **Example:** Jorge, who lives and works in Valencia, is a resident of Valencia.
+
+* **"Frequently Present"**
+    * **Rule:** Spends < 22 nights but is present at least once a week in 4 different weeks over the last 8 weeks.
+    * **Example:** Laura, on a hybrid master's program, stays two nights a week and is "frequently present."
+
+* **"Tourist"**
+    * **Rule:** Spends < 22 nights and is present in < 4 different weeks over the last 8 weeks.
+    * **Example:** Ivanna from St. Petersburg who spends two weeks a year in Torreblanca is a "tourist."
+
+* **"Day Visitor"**
+    * **Rule:** Present > 2 hours during the day but does not stay the night before or after. Not a recurring visitor.
+    * **Example:** Alberto, on vacation in Calpe, drives to Altea for lunch and is a "day visitor" in Altea.
+
+* **"Recurrent Day Visitor"**
+    * **Rule:** Present > 2 hours during the day on > 5 days in the last 15. Does not stay overnight.
+    * **Example:** Isabel, who lives in Calpe but attends school daily in Benidorm, is a "recurrent day visitor" in Benidorm.
+
+* **"In Transit"**
+    * **Rule:** Present < 2 hours during the day and does not stay the night before or after.
+    * **Example:** Enrique, a truck driver who stops for coffee, is "in transit."
+
+* **Clarifications:**
+    * Only "Resident," "Frequently Present," and "Tourist" categories spend the night in the observation zone.
+    * The distinction between "Day Visitor" (>2h) and "In Transit" (<2h) is based on daytime activity (6 AM - 12 PM).
+
+**## 3. Your Tasks**
+
+As the Senior Data Strategist, complete the following tasks for **Phase 1**.
+
+**1.  Define Key Performance Indicators (KPIs):**
+    * Analyze the available data and identify the most valuable, actionable KPIs for the target municipalities.
+    * Group these KPIs by the primary municipal function they serve:
+        * Tourism Management & Economic Development
+        * Urban Planning & Mobility
+        * Public Services & Safety
+    * For each KPI, define what it measures, the specific insight it provides, and which source data groups are needed to calculate it.
+
+**2.  Propose a Data Preparation and Consolidation (ETL) Plan:**
+    * Outline the required steps to transform the raw, separate files into a clean, unified, and analysis-ready dataset.
+    * Recommend a logical data model (e.g., a central "fact table" for daily visits enriched with dimensions).
+    * Suggest specific data cleaning actions (e.g., date standardization) and feature engineering ideas (e.g., creating a `Season` or `IsWeekend` column) that would add value.
+
+**3.  Outline a Data Validation Strategy:**
+    * Detail a methodology for validating the data's accuracy. Specifically, how would you use external data from Spain's National Statistics Institute (INE) as a benchmark?
+    * Explain how to interpret the results of this comparison and how to communicate the data's confidence level to a potential client.
+
+**4.  Identify Additional Commercial Opportunities:**
+    * Based on the data's potential, brainstorm a list of other potential client sectors or specific companies in Spain that would find this analysis valuable.
+    * For two of these potential clients, briefly describe the unique value proposition for them.
+
+**## 4. Output Requirements**
+
+* Structure your entire response using Markdown for clarity and organization.
+* Use clear headings for each major section (`##`) and sub-section (`###`).
+* Present the list of KPIs in a table format with columns: `KPI Name`, `Description`, `Actionable Insight for Municipalities`, and `Required Data Groups`.
+* Address each of the four tasks in a distinct, clearly labeled section of your response.

@@ -57,11 +57,11 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
         return
 
     # --- PATH A: Generate the Origin Analysis File ---
-    # This path is already correct and requires no changes.
     logging.info(f"    - Building Origin dataset for '{base_name}'...")
     origin_df = base_df.copy()
     for suffix in ORIGIN_FILES:
-        detail_path = next((p for p in file_paths if p.stem.endswith(f"_{suffix}")), None)
+        # --- MODIFIED: Made suffix matching case-insensitive ---
+        detail_path = next((p for p in file_paths if p.stem.lower().endswith(f"_{suffix.lower()}")), None)
         if not detail_path: continue
         try:
             detail_df = pd.read_parquet(detail_path)
@@ -101,7 +101,8 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
     logging.info(f"    - Building Demographics dataset for '{base_name}'...")
     demographics_df = base_df.copy()
     for suffix in DEMOGRAPHIC_FILES:
-        detail_path = next((p for p in file_paths if p.stem.endswith(f"_{suffix}")), None)
+        # --- MODIFIED: Made suffix matching case-insensitive ---
+        detail_path = next((p for p in file_paths if p.stem.lower().endswith(f"_{suffix.lower()}")), None)
         if not detail_path: continue
 
         try:
@@ -111,10 +112,8 @@ def process_file_group(base_name: str, file_paths: list, output_dir: Path):
             pivot_col = suffix.lower()
             if pivot_col not in detail_df.columns: continue
 
-            # --- NEW: Filter out 'Acumulado' rows BEFORE pivoting ---
             logging.info(f"      - Filtering 'Acumulado' rows from {pivot_col} data.")
             detail_df = detail_df[detail_df[pivot_col].str.lower() != 'acumulado']
-            # --- END OF NEW BLOCK ---
 
             pivot_keys = [k for k in detail_df.columns if k not in [pivot_col, 'volumen']]
             pivoted = detail_df.pivot_table(index=pivot_keys, columns=pivot_col, values='volumen').reset_index()
@@ -154,11 +153,13 @@ def main():
         logging.info(f"--- Processing location: {location} ---")
 
         file_groups = defaultdict(list)
+        # --- MODIFIED: Removed 'mes' from the filter to include monthly files ---
         files_to_process = [f for f in location_path.glob('*.parquet') if
-                            "semana" not in f.name.lower() and "mes" not in f.name.lower()]
+                            "semana" not in f.name.lower()]
 
         for f in files_to_process:
-            match = re.match(r'(.+?)(?:_Nacionalidad|_Municipio|_Edad|_Genero)?$', f.stem)
+            # --- MODIFIED: Added re.IGNORECASE to correctly group files with lowercase suffixes ---
+            match = re.match(r'(.+?)(?:_Nacionalidad|_Municipio|_Edad|_Genero)?$', f.stem, re.IGNORECASE)
             base_name = match.group(1) if match else f.stem
             file_groups[base_name].append(f)
 
