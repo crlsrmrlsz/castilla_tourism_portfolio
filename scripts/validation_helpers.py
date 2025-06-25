@@ -4,7 +4,6 @@ import pandas as pd
 import os
 
 
-# (The first two functions: load_and_clean_mobile_data and load_and_clean_public_data are correct)
 def load_and_clean_mobile_data(path_mobile):
     """
     Loads and performs initial cleaning on the mobile datasets.
@@ -20,22 +19,28 @@ def load_and_clean_public_data(path_public):
     """
     Loads and performs initial cleaning on the public INE datasets.
     """
+    # FIX APPLIED HERE: Changed encoding to 'utf-8' to match your file format
     eoh_df = pd.read_csv(
         os.path.join(path_public, "INE_EOH_Viajeros_pernoctaciones_mensual.csv"),
         sep=';',
-        encoding='latin1'
+        encoding='utf-8'
     )
+    # FIX APPLIED HERE: Changed encoding to 'utf-8'
     frontur_df = pd.read_csv(
         os.path.join(path_public, "INE_FRONTUR_Total_anual_CLM.csv"),
         sep=';',
-        encoding='latin1'
+        encoding='utf-8'
     )
+
+    # Whitespace stripping is still a good defensive practice
+    eoh_df['Residencia: Nivel 2'] = eoh_df['Residencia: Nivel 2'].str.strip()
+    eoh_df['Viajeros y pernoctaciones'] = eoh_df['Viajeros y pernoctaciones'].str.strip()
+
     eoh_df['date'] = pd.to_datetime(eoh_df['Periodo'], format='%YM%m')
     eoh_df['Total'] = pd.to_numeric(eoh_df['Total'], errors='coerce')
     return {'eoh': eoh_df, 'frontur': frontur_df}
 
 
-# (Function prepare_monthly_tourist_comparison is correct)
 def prepare_monthly_tourist_comparison(nocturno_df, eoh_df):
     """
     Prepares a merged DataFrame for comparing monthly tourist volumes.
@@ -48,6 +53,7 @@ def prepare_monthly_tourist_comparison(nocturno_df, eoh_df):
     ).reset_index()
     mobile_pivot = mobile_pivot[['date', 'NoLocal', 'Extranjero']]
     mobile_pivot.columns = ['date', 'Mobile_Domestic', 'Mobile_Foreign']
+
     eoh_viajeros = eoh_df[
         (eoh_df['Viajeros y pernoctaciones'] == 'Viajero') &
         (eoh_df['Provincias'].isnull())
@@ -55,19 +61,19 @@ def prepare_monthly_tourist_comparison(nocturno_df, eoh_df):
     eoh_pivot = eoh_viajeros.pivot_table(
         index='date', columns='Residencia: Nivel 2', values='Total'
     ).reset_index()
+
+    # With the correct encoding, we can now look for the clean, correct string
     eoh_pivot = eoh_pivot[['date', 'Residentes en España', 'Residentes en el Extranjero']]
+
     eoh_pivot.columns = ['date', 'EOH_Domestic', 'EOH_Foreign']
     comparison_df = pd.merge(mobile_pivot, eoh_pivot, on='date', how='inner')
     return comparison_df
 
 
-##### vvvvvv THIS IS THE FUNCTION TO REPLACE vvvvvv #####
 def prepare_average_stay_comparison(noche_estancia_df, eoh_df):
     """
     Prepares a merged DataFrame for comparing the average length of stay.
-    CORRECTED: This version is more robust and avoids the pivot_table KeyError.
     """
-    # 1. Calculate Mobile Average Stay for tourists (this part is correct)
     mobile_tourist_stay = noche_estancia_df[
         noche_estancia_df['categoriadelvisitante'].isin(['Turista', 'Habitualmente presente'])
     ].copy()
@@ -81,26 +87,21 @@ def prepare_average_stay_comparison(noche_estancia_df, eoh_df):
         'total_volume_sum']
     mobile_stay = mobile_stay_grouped.reset_index().rename(columns={'month_date': 'date'})
 
-    # 2. Calculate EOH Average Stay (Robust Method)
-    # Get total Pernoctaciones per month
     total_pernoctaciones = eoh_df[
         (eoh_df['Provincias'].isnull()) &
         (eoh_df['Viajeros y pernoctaciones'] == 'Pernoctaciones') &
         (eoh_df['Residencia: Nivel 2'] == 'Total')
         ][['date', 'Total']].rename(columns={'Total': 'Pernoctaciones'})
 
-    # Get total Viajeros per month
     total_viajeros = eoh_df[
         (eoh_df['Provincias'].isnull()) &
         (eoh_df['Viajeros y pernoctaciones'] == 'Viajero') &
         (eoh_df['Residencia: Nivel 2'] == 'Total')
         ][['date', 'Total']].rename(columns={'Total': 'Viajero'})
 
-    # Merge the two tables and calculate the average stay
     eoh_avg_stay_df = pd.merge(total_pernoctaciones, total_viajeros, on='date', how='inner')
     eoh_avg_stay_df['EOH_Avg_Stay'] = eoh_avg_stay_df['Pernoctaciones'] / eoh_avg_stay_df['Viajero']
 
-    # 3. Merge mobile and EOH results
     comparison_df = pd.merge(
         mobile_stay[['date', 'Mobile_Avg_Stay']],
         eoh_avg_stay_df[['date', 'EOH_Avg_Stay']],
@@ -110,13 +111,9 @@ def prepare_average_stay_comparison(noche_estancia_df, eoh_df):
     return comparison_df
 
 
-##### ^^^^^^ THIS IS THE FUNCTION TO REPLACE ^^^^^^ #####
-
-
-# (Function prepare_city_population_comparison is correct)
 def prepare_city_population_comparison(path_analytics, path_public):
     """
-    NEW: Prepares a DataFrame comparing resident population for each provincial capital
+    Prepares a DataFrame comparing resident population for each provincial capital
     between mobile data and official Padrón files.
     """
     cities = {
@@ -139,7 +136,8 @@ def prepare_city_population_comparison(path_analytics, path_public):
         mobile_pop['City'] = city_name
 
         public_path = os.path.join(path_public, f"INE_{city_code}_padron_genero_anual.csv")
-        public_df = pd.read_csv(public_path, sep=';', encoding='latin1')
+        # FIX APPLIED HERE: Changed encoding to 'utf-8'
+        public_df = pd.read_csv(public_path, sep=';', encoding='utf-8')
         public_pop = public_df[public_df['Sexo'] == 'Total'][['Periodo', 'Total']]
         public_pop.rename(columns={'Periodo': 'year', 'Total': 'Padron_Population'}, inplace=True)
         public_pop['City'] = city_name
