@@ -52,7 +52,7 @@ Here is a description of the available statistical data files.
 * **File Name:** `INE_EOH_Viajeros_pernoctaciones_mensual.csv`
 * **Description:** This file is from the INE's `Encuesta de Ocupación Hotelera` (Hotel Occupancy Survey) and provides detailed monthly tourism data.
 * **Columns:** `Comunidades y Ciudades Autónomas`, `Provincias`, `Viajeros y pernoctaciones` (Travelers and overnight stays), `Residencia: Nivel 2` (Residence), `Periodo`, `Total`.
-* **Meaning:** This file quantifies hotel tourism from January 2023 to December 2024. It covers both Castilla-La Mancha as a whole and its five individual provinces. The key metrics are:
+* **Meaning:** This file quantifies hotel tourism from Jaune 2022 to December 2024. It covers both Castilla-La Mancha as a whole and its five individual provinces. The key metrics are:
     * `Viajeros`: The number of people checking into hotels.
     * `Pernoctaciones`: The total number of nights spent by travelers in hotels.
     The data is also segmented by the traveler's origin: `Residentes en España` (domestic tourists) and `Residentes en el Extranjero` (foreign tourists).

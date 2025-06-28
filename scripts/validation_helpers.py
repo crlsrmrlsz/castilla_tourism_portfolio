@@ -23,13 +23,15 @@ def load_and_clean_public_data(path_public):
     eoh_df = pd.read_csv(
         os.path.join(path_public, "INE_EOH_Viajeros_pernoctaciones_mensual.csv"),
         sep=';',
-        encoding='utf-8'
+        encoding='utf-8',
+        thousands='.'
     )
     # FIX APPLIED HERE: Changed encoding to 'utf-8'
     frontur_df = pd.read_csv(
         os.path.join(path_public, "INE_FRONTUR_Total_anual_CLM.csv"),
         sep=';',
-        encoding='utf-8'
+        encoding='utf-8',
+        thousands='.'
     )
 
     # Whitespace stripping is still a good defensive practice
@@ -43,30 +45,49 @@ def load_and_clean_public_data(path_public):
 
 def prepare_monthly_tourist_comparison(nocturno_df, eoh_df):
     """
-    Prepares a merged DataFrame for comparing monthly tourist volumes.
+    Prepares a monthly comparison DataFrame including mobile data (separated by role)
+    and official EOH data.
+
+    Changes from previous version:
+    - Domestic mobile data now INCLUDES 'local' users to better match EOH criteria.
+    - Mobile data is split into 'Turista' and 'Habitualmente_Presente' roles.
     """
-    mobile_tourists = nocturno_df[
-        nocturno_df['categoriadelvisitante'].isin(['Turista', 'Habitualmente presente'])
-    ].copy()
-    mobile_pivot = mobile_tourists.pivot_table(
-        index='date', columns='origen', values='volumen_total', aggfunc='sum'
-    ).reset_index()
-    mobile_pivot = mobile_pivot[['date', 'NoLocal', 'Extranjero']]
-    mobile_pivot.columns = ['date', 'Mobile_Domestic', 'Mobile_Foreign']
+    # Make a copy to avoid SettingWithCopyWarning
+    df = nocturno_df.copy()
 
-    eoh_viajeros = eoh_df[
-        (eoh_df['Viajeros y pernoctaciones'] == 'Viajero') &
-        (eoh_df['Provincias'].isnull())
-        ].copy()
-    eoh_pivot = eoh_viajeros.pivot_table(
-        index='date', columns='Residencia: Nivel 2', values='Total'
-    ).reset_index()
+    # Convert 'mes' to datetime and extract the month start date
+    df['date'] = pd.to_datetime(df['mes'], format='%Y%m').dt.to_period('M').dt.start_time
 
-    # With the correct encoding, we can now look for the clean, correct string
-    eoh_pivot = eoh_pivot[['date', 'Residentes en España', 'Residentes en el Extranjero']]
+    # --- New Logic: Define domestic and foreign categories ---
+    # Domestic now includes 'local' and 'non-local'
+    is_domestic = df['origen'] == 'NoLocal'
+    is_foreign = df['origen'] == 'Extranjero'
 
-    eoh_pivot.columns = ['date', 'EOH_Domestic', 'EOH_Foreign']
-    comparison_df = pd.merge(mobile_pivot, eoh_pivot, on='date', how='inner')
+    # --- New Logic: Separate counts by role ---
+    is_turista = (df['categoriadelvisitante'] == 'turista')
+    is_habitual = (df['categoriadelvisitante'] == 'habitualmente_presente')
+
+    # Calculate aggregates for each category and role
+    domestic_turista = df[is_domestic & is_turista].groupby('date')['volumen_total'].sum()
+    domestic_habitual = df[is_domestic & is_habitual].groupby('date')['volumen_total'].sum()
+    foreign_turista = df[is_foreign & is_turista].groupby('date')['volumen_total'].sum()
+    foreign_habitual = df[is_foreign & is_habitual].groupby('date')['volumen_total'].sum()
+
+    # Combine into a single mobile data DataFrame
+    mobile_df = pd.DataFrame({
+        'Mobile_Domestic_Turista': domestic_turista,
+        'Mobile_Domestic_Habitual': domestic_habitual,
+        'Mobile_Foreign_Turista': foreign_turista,
+        'Mobile_Foreign_Habitual': foreign_habitual,
+    }).fillna(0) # Fill months with no data with 0
+
+    # Prepare EOH data
+    eoh_df['date'] = pd.to_datetime(eoh_df['date'])
+    eoh_df.set_index('date', inplace=True)
+
+    # Merge mobile and EOH data
+    comparison_df = mobile_df.join(eoh_df, how='inner').reset_index()
+
     return comparison_df
 
 
