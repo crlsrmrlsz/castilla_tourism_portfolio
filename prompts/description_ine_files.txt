@@ -1,4 +1,5 @@
 Here is a description of the available statistical data files.
+NOTE: point is used as thousand separator.
 
 ### SET 1: Population by Age (ECP Files)
 
@@ -6,7 +7,7 @@ Here is a description of the available statistical data files.
 * **Description:** This set of files contains detailed population data from the `Estadística de Padrón Continuo` (Continuous Population Register). Each file corresponds to the month of January for a specific year.
 * **Columns:**
     * `Edad`: The primary column, listing single years of age from "0 años" to "100 y más años".
-    * Geographical Columns: `ALBACETE`, `CIUDAD REAL`, `CUENCA`, `GUADALAJARA`, `TOLEDO`, and totals for `CASTILLA-LA MANCHA` and `ESPAÑA`.
+    * Geographical Columns: `ALBACETE`, `CIUDAD REAL`, `CUENCA`, `GUADALAJARA`, `TOLEDO`, and totals for `CASTILLA-LA MANCHA` and `ESPAÑA`. (provinces and whole community, these are province scope data, not valuable for us, just community)
     * Sub-columns: Each geographical area is broken down by `Total`, `Hombres` (Men), and `Mujeres` (Women).
 * **Meaning:** These files provide a granular, yearly snapshot of the population structure, broken down by single year of age, gender, and geographical area.
 * **Example Data (from ECP_CLM_2023_enero.csv):**

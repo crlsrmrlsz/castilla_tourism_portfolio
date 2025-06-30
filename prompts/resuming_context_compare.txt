@@ -1,0 +1,78 @@
+I am resuming again the development of the code to contrast public data against mobile phone anonymized data for tourism dataset in castilla la mancha, spain.
+
+I have been working with you to generate the current code but seems to have lost some context and start generating bad code. So lets start again.
+
+The objective is to compare two datasets, with different data to ensure that mobile data is correct, as it is obtained extrapolating the data from a mobile phone operator to whole population, as they have just 30% market share. The other dataset is data from INE in Spain, more reliable but with not the same exact meaning for the values.
+
+Please find attached general description of both datasets in description_ine_files.txt for INE public data and description_mobile_files_qa_check.txt for mobile data already aggregated in parquet files. The mobile data comes from a raw data files in csv that is described ( as well as the general project this task is just a preliminary part of ) in : data description.txt (here you find the description for visitorcategory, that is key to understand numbers in mobile data and its meaning).
+
+The comparisons to be done are the following, based on the public data available:
+
+SET 1: Population by Age (ECP Files).
+This can be used to compare population for community level, and difference by gender. Could be compared to "residente" for categoriavisitante in mobile data (diario_mes files). The data is available for some months in public data and aggregated by every month in the date range for mobile.
+
+SET 2: Annual Municipal Population (Padrón Files)
+This can be used to compared population at city level. The nuance here is that is annual and mobile data is monthly (diario_mes files), we need to think a way to compare similar aggregations.
+
+SET 3: Foreign Tourism - Annual (FRONTUR File)
+comparable to categoriavisitante 'turista' in mobile files (diario_mes_origin with data in total and aggregated by some countries, not all, just some). Again, data is annual in FRONTUR INE file and data is monthly in mobile files, need to devise a way to aggregate mobile data and be comparable,
+
+SET 4: Hotel Occupancy - Monthly (EOH File) number of 'viajeros'
+This is tricky, EOH files contain data for 'residentes en españa' (local and nolocal in origen column for mobile files) and residentes en extranjero ('extranjero' for mobile files). The point here is that EOH counts just people in hotels, and mobile files (nocturno_mes) counts tourist, usually_present and stands for people spending the night, wherever, hotel ,airbnb, relatives homes or wherever.
+
+SET 5: Hotel Occupancy - Monthly (EOH File), number of 'pernoctaciones'
+IN this case , using the same EOH file, filtering by pernoctaciones we can get the number of nights spent, and this is somhow comparable to NocheEstancia mobile data. taking into account categoriavisitante and time aggregation, as EOH file is monthly.
+
+
+The project structure for the data is:
+data/analytics/
+├── AB Albacete/
+│   ├── Diario_Mes_demographics_analysis.parquet
+│   ├── Diario_Mes_origin_analysis.parquet
+│   ├── NocheEstancia_demographics_analysis.parquet
+│   ├── NocheEstancia_origin_analysis.parquet
+│   ├── Nocturno_Mes_demographics_analysis.parquet
+│   └── Nocturno_Mes_origin_analysis.parquet
+├── CCAA Castilla-La Mancha/
+│   ├── Diario_Mes_demographics_analysis.parquet
+│   ├── Diario_Mes_origin_analysis.parquet
+│   ├── NocheEstancia_demographics_analysis.parquet
+│   ├── NocheEstancia_origin_analysis.parquet
+│   ├── Nocturno_Mes_demographics_analysis.parquet
+│   └── Nocturno_Mes_origin_analysis.parquet
+├── CR Ciudad Real/
+│   └── (contains the same .parquet files)
+├── CU Cuenca/
+│   └── (contains the same .parquet files)
+├── GU Guadalajara/
+│   └── (contains the same .parquet files)
+└── TO Toledo/
+    └── (contains the same .parquet files)
+
+and for public data:
+
+data/raw/ine_data/
+├── ECP_CLM_2022_enero.csv
+├── ECP_CLM_2023_enero.csv
+├── ECP_CLM_2024_enero.csv
+├── INE_AB_padron_genero_anual.csv
+├── INE_CR_padron_genero_anual.csv
+├── INE_CU_padron_genero_anual.csv
+├── INE_EOH_Viajeros_pernoctaciones_mensual.csv
+├── INE_FRONTUR_Total_anual_CLM.csv
+├── INE_GU_padron_genero_anual.csv
+└── INE_TO_padron_genero_anual.csv
+-
+
+The date period to check is june 2022 to december 2024, should be data for these dates in both datasets, although the code should not restrict to this as mabe i put files with more daterange in the future.
+
+I want to generate graphics , bar charts, grouped bar charts to compare one and another, to show potential customers how reliable mobile data is, if it is. The chart must be easy to read, professional, taking care of all the details, colors, style, axes names, titles and so on, very professional appearance.
+
+Please generate the code to achieve this. The code will be part of a project which already has an structure and filenames, so be coherent with the new code.
+ent people, to see the contribution of each one to the final number compared to EOH file data.
+
+Analyze all the files, all my explanations and descriptions, and the sample data files to gather the whole context and then generate the code files that best fit my project. The code should be clean and easy to read.
+
+I would like to use a notebook (in notebook folder) to see the analysis,  to help in notebook use a .py helper file under scripts folder. Include lot of debugging, I want to see the dataframes that are being used to visually check every step is correct, and data is ok. Every file loaded, i want to see it , every join, merge or any data transformation, let me see in the notebook the results being used in the code.
+
+(attach, txt descriptions, ine files, png project structure)
