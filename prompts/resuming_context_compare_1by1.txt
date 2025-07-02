@@ -1,0 +1,183 @@
+I am resuming again the development of the code to contrast public data against mobile phone anonymized data for tourism dataset in castilla la mancha, spain.
+I have been working with you to generate the current code but seems to have lost some context and start generating bad code. So lets start again.
+
+The objective is to compare two datasets, with different data to ensure that mobile data is correct, as it is obtained extrapolating the data from a mobile phone operator to whole population, as they have just 30% market share. The other dataset is data from INE in Spain, more reliable but with not the same exact meaning for the values.
+
+I have data for several datasets to compare, but we will code one by one to focus on each task. Anyway, when generating the code take into account that the files and the code will be incrementally include more code as we code more comparisons.
+
+First :
+we will compare INE data (dataset 1)  to mobile data (dataset 2) for people spending nights in castilla la mancha
+dataset 1:
+***
+We have as  public INE data: Hotel Occupancy - Monthly (INE_EOH_Viajeros_pernoctaciones_mensual.csv), which contains number of people staying in hotels, per month, data obtained from hotel registers.
+I attach the csv file (it is in utf-8 and uses dot as thousands separator so use proper parameters when reading csv) it has:
+ -Column "Viajeros y pernoctaciones" contains "viajeros" for the number of people, "pernoctaciones" for the number of nights
+ -Column "Residencia: Nivel 1" contains total when column "Residencia: Nivel 2" is blank, and "Residencia: Nivel 2" when has data, contains data for just spanish people "Residentes en España" or numbers for foreigners "Residentes en el Extranjero".
+***
+
+dataset 2:
+***
+Numbers in this dataset should match numbers in dataset 2: the mobile dataset (Nocturno_Mes_demographics_analysis.parquet file, I will tell you later the project structure to find each file).
+ Here is a head of the parquet file:
+ --- DataFrame Head ---
+       mes etiquetadelmes      origen   categoriadelvisitante  volumen_total  volumen_edad_18-24  volumen_edad_25-34  volumen_edad_35-44  volumen_edad_45-54  volumen_edad_55-64  volumen_edad_65 o más  volumen_edad_<18  volumen_genero_h  volumen_genero_m  volumen_genero_nr
+ 0  202206     2022 junio  Extranjero  Habitualmente presente          32205                 NaN                 NaN                 NaN                 NaN                 NaN                    NaN               NaN               NaN               NaN                NaN
+ 1  202206     2022 junio  Extranjero               Residente         164493                 NaN                 NaN                 NaN                 NaN                 NaN                    NaN               NaN               NaN               NaN                NaN
+ 2  202206     2022 junio  Extranjero                 Turista         331861                 NaN                 NaN                 NaN                 NaN                 NaN                    NaN               NaN               NaN               NaN                NaN
+ 3  202206     2022 junio       Local  Habitualmente presente         467158             21546.0             39073.0             55595.0             71204.0             63418.0                66064.0           69143.0          225292.0          160638.0              113.0
+ 4  202206     2022 junio       Local               Residente       44938382           3067172.0           4622299.0           6897725.0           7087571.0           5762486.0              9278696.0         8129228.0        24492988.0        20346118.0             6071.0
+ Contains data for the same period (june 2022 to december 2024).
+ Date is in column "mes"
+ column "origen" is "Extranjero" for foreign, "Local" for people from Castilla La Mancha, and "NoLocal" people from the rest of Spain, should match "Extranjero" with "Residentes en el Extranjero" and the resto with "residentes en España" from INE file.
+ column "categoriadelvisitante" is important as contains the type of visitor. These are the descriptions and examples of use for possible caegories (in english, but data in the file is in spanish):
+
+ -----
+ * "Resident": A person who has spent more than 21 nights in the analyzed area over the last 8 weeks. In other words, someone is considered a resident of Gandía if their mobile phone was detected at night in Gandía at least 22 times in the last 56 nights (8 weeks).
+ Examples:
+ - Jorge lives and works in Valencia. He is counted as a resident of Valencia.
+ - Elena is a French teacher in Cartagena and spends every summer in Benidorm at her late grandmother’s house. Since she has two months of vacation, Elena will be counted as a resident around mid-summer.
+
+ * "Frequently Present": A person who spends fewer than 22 nights in the area over the last 8 weeks but has been detected at least once per week across 4 different weeks. In other words, someone is "frequently present" if they are observed in the area during four different weeks but with fewer than 22 total nights in the last 8 weeks.
+ Example:
+ - Laura is enrolled in a hybrid master's program in Valencia and stays overnight on Tuesdays and Thursdays in the Benimaclet neighborhood. Laura is considered "frequently present" in Benimaclet.
+
+ * "Tourist": Someone who spends fewer than 22 nights and is observed in fewer than 4 different weeks over the last 8 weeks.
+ Examples:
+ - Nuria is from Xàbia but went out for drinks in Dénia on Saturday and returned at 5 AM. Since she spent most of the night in Dénia, she is counted as a tourist in Dénia with an origin in Xàbia.
+ - Ivanna is from St. Petersburg and spends a couple of weeks each year in Torreblanca. She is considered a tourist.
+ - Miguel is from Dénia but works in Barcelona. When he returns for Christmas to spend time with his family, he is counted as a tourist in Dénia (with Dénia as his origin since that’s where his phone contract was registered).
+
+ * "Day Visitor" A person observed in the area during the day for more than 2 hours but not the night before or the night of the analysis. In other words, they are only seen during the day, with a presence exceeding 2 hours, but not recurrently.
+ Examples:
+ - Sofía is a sales representative for a pharmaceutical company and typically visits 2-3 towns to present new products or have lunch with clients. She is counted as a day visitor in towns where she doesn’t stay overnight and as a tourist where she does.
+ - Alberto is vacationing on the Levante coast, staying in Calpe for a few days, and decides to try a recommended restaurant in Altea. On the day he visits, he is counted as a day visitor in Altea.
+
+ * "Recurrent Day Visitor"*: A person present for more than 2 hours during the day on more than 5 days in the last 15. In other words, if someone visits the observed area more than 5 times in the last two weeks but only during the day (not overnight), they are a recurrent day visitor.
+ Examples:
+ - Isabel lives in Calpe but attends a school in Benidorm. She has classes Monday to Friday from 8:30 AM to 4:30 PM. During the school year, Isabel is a recurrent day visitor in Benidorm.
+ - Ismael is a dentist who lives and works in Xàtiva but collaborates 3 days a week with another clinic in Dénia. He is a recurrent day visitor in Dénia.
+
+
+ * "In Transit": A person observed in the area during the day for less than 2 hours and not seen the night before or the night of the analysis. In other words, they are passing through, differing from day visitors only in their shorter presence (<2 hours).
+ Examples:
+ - Marc works daily in Benidorm but is from Calpe. He picks up a coworker in Altea to carpool. Marc is counted as "in transit" in Altea.
+ - Enrique is a truck driver who stops at a Valencia gas station to refuel and have coffee. He is counted as "in transit" in Valencia.
+
+
+ * "Tourist/Frequently Present/Resident in Transit": A tourist, frequently present individual, or resident who spends less than 2 hours in the observation zone between 6 AM and 12 AM.
+
+Clarifications:
+ - "Day Visitor," "Recurrent Day Visitor," and "In Transit" do not spend the night in the observation zone. All other categories do spend the night there.
+ - Any person present between 12 AM and 6 AM and "inactive" in the zone (predominantly in the observation area for more than 2 hours) is segmented as **Resident, Tourist, or Frequently Present**.
+ - The determination of Day Visitor (>2h) vs. In Transit (<2h) is based on activity between 6 AM and 12 PM.
+
+***
+
+Nuances of the comparison:
+***
+ The equivalent categoriadelvisitante that should match INE numbers should be "tourist", but perhaps also "Frequently Present", so I want to sum both numbers in the comparison, but being able to distinguis the contribution of each one to the total number.
+
+ To be precise, the INE data represents just hotels, and mobile data, people spending the night in the community. It is not directly comparable as people can spend the nigth in other places different than hotels.
+
+ To account for that, I want you to check the data , also from INE, in this websites, for two points in time:
+ for 2023: https://www.ine.es/daco/daco42/frontur/frontur1023.pdf
+ for 2024: https://www.ine.es/dyngs/Prensa/FRONTUR0724.htm
+
+ that gives statistics of people staying in hotels and other types of places, so you can get a percentage of people staying in hotels from total visitors.
+
+ That percentage should be noted in the final graph I want to generate, or even represent somehow in the graphic the extrapolation to total number of visitors knowing the people in hotels, that will be comparable to mobile data (for tourist and frequently present as I said before)
+
+ The date period to check is june 2022 to december 2024, should be data for these dates in both datasets, although the code should not restrict to this as mabe i put files with more daterange in the future.
+***
+
+
+Result:
+***
+ The final result must be a graph, with very professional style that will be used in a report to explain data quality.
+ The graph should compare both datasets clearly, with bar chart, comparing mobile to ine data, distinguising tourist and frequently present in the bar for mobile data, and being able to see ine data extrapolation to total people present in any type of accomodation from the people registed in hotels.
+***
+
+
+How:
+***
+ I would like a notebook where i can see the graphs generates and with debugging information for me to see datasets during the process, to suypervise merging, pivoting and any change from the original data.
+ Include code to allow me see tha data and remove it easily with some debug parameter
+ The code to prepare the data can be included in any py script in the script folder, unless you see any other way to create the code, more professional or easy, and according to my project structure.
+
+ The project structure for the data is:
+
+ data/analytics/
+ ├── AB Albacete/
+ │   ├── Diario_Mes_demographics_analysis.parquet
+ │   ├── Diario_Mes_origin_analysis.parquet
+ │   ├── NocheEstancia_demographics_analysis.parquet
+ │   ├── NocheEstancia_origin_analysis.parquet
+ │   ├── Nocturno_Mes_demographics_analysis.parquet
+ │   └── Nocturno_Mes_origin_analysis.parquet
+ ├── CCAA Castilla-La Mancha/
+ │   ├── Diario_Mes_demographics_analysis.parquet
+ │   ├── Diario_Mes_origin_analysis.parquet
+ │   ├── NocheEstancia_demographics_analysis.parquet
+ │   ├── NocheEstancia_origin_analysis.parquet
+ │   ├── Nocturno_Mes_demographics_analysis.parquet
+ │   └── Nocturno_Mes_origin_analysis.parquet
+ ├── CR Ciudad Real/
+ │   └── (contains the same .parquet files)
+ ├── CU Cuenca/
+ │   └── (contains the same .parquet files)
+ ├── GU Guadalajara/
+ │   └── (contains the same .parquet files)
+ └── TO Toledo/
+     └── (contains the same .parquet files)
+
+ and for public data: 
+
+ data/raw/ine_data/
+ ├── ECP_CLM_2022_enero.csv
+ ├── ECP_CLM_2023_enero.csv
+ ├── ECP_CLM_2024_enero.csv
+ ├── INE_AB_padron_genero_anual.csv
+ ├── INE_CR_padron_genero_anual.csv
+ ├── INE_CU_padron_genero_anual.csv
+ ├── INE_EOH_Viajeros_pernoctaciones_mensual.csv
+ ├── INE_FRONTUR_Total_anual_CLM.csv
+ ├── INE_GU_padron_genero_anual.csv
+ └── INE_TO_padron_genero_anual.csv
+ -
+
+
+ And this is the structure of my pycharm project: 
+
+ castilla_tourism_portfolio 
+ ├── data
+ │   ├── analytics
+ │   ├── processed
+ │   └── raw
+ ├── notebooks
+ │   ├── .ipynb_checkpoints
+ │   ├── describe_data_quality_check.ipynb
+ │   └── inspect_parquet.ipynb
+ ├── output
+ ├── prompts
+ │   ├── data description.txt
+ │   ├── description_ine_files.txt
+ │   ├── description_mobile_files_qa_check.txt
+ │   ├── description_parquet_files.txt
+ │   ├── From Mobility to Municipality_ A Strategic Blueprint for Monetizing
+ │   ├── improved_prompt_gemini_1.txt
+ │   ├── resuming_context_compare.txt
+ │   └── resuming_context_compare_1by1.txt
+ ├── scripts
+ │   ├── 01_merge_and_convert.py
+ │   ├── 02_create_analysis_datasets.py
+ │   ├── 03_validate_data.py
+ │   ├── inspect_parquet.py
+ │   └── project_helpers.py
+ ├── site
+ ├── visualizations
+ ├── .gitignore
+ └── LICENSE
+
+I would like to use a notebook (in project notebook folder) to see the analysis,  to help in notebook use a .py helper file under scripts folder. Include lot of debugging to see how data is being transformed from files to final dataframe for plotting. use a debug variable to be able to switch off when done.
+
+***
