@@ -138,7 +138,7 @@ There is also data at city level:
 a. public dataset:
 
 File name: INE_AB_padron_genero_anual
-* File Names: INE_AB_padron_genero_anual, inside 'data\raw\ine_data', AB is for Albacete, there is one file for each city.
+* File Names: INE_AB_padron_genero_anual, inside 'data\raw\ine_data', AB is for Albacete, there is one file for each city (TO, GU, CR, CU).
 * Description: anual data, aggregated by gender of population in the city
 * Columns:
     Municipios; city
@@ -158,17 +158,27 @@ Municipios;Sexo;Periodo;Total
 02 Albacete;Mujeres;2023;193.498
 02 Albacete;Mujeres;2022;192.764
 
+b. mobile dataset
+
+Same as for 1. COMMUNITY LEVEL, but file is located in a different folder for each city, for example for AB (Albacete)
+ data/analytics/
+  ├── AB Albacete/
+Project fodler structure is explained later in this prompt.
+
 
 #Result:
- The final result must be graphics comparing both datasets.
- I think bar graphs are sufficient by now. I will explore
+ The final result must be graphics comparing both datasets. One graphic for community level and other for the 5 cities.
+ The graphics must compare total numbers and also differentiati age range and gender, to see how bothdataset match.
+ PLease generate one set of graphs for total numbers and other for gender, and other for date range.
+ I think bar graphs are a good option, but please analyze any other option for representing these data.
+
 
 
 #How:
 ***
- I would like a notebook where i can see the graphs generates and with debugging information for me to see datasets during the process, to suypervise merging, pivoting and any change from the original data.
- Include code to allow me see tha data and remove it easily with some debug parameter
- The code to prepare the data can be included in any py script in the script folder, unless you see any other way to create the code, more professional or easy, and according to my project structure.
+
+Please analyze the code files for the previous indicator, and generate the code and graphics in the same style and structure, reutilizing notebook and data_processing_helper.py.
+Leave previous code unchanged.
 
  The project structure for the data is:
 
@@ -238,12 +248,10 @@ Municipios;Sexo;Periodo;Total
  │   ├── 02_create_analysis_datasets.py
  │   ├── 03_validate_data.py
  │   ├── inspect_parquet.py
- │   └── project_helpers.py
+ │   └── data_processing_helpers.py
  ├── site
  ├── visualizations
  ├── .gitignore
  └── LICENSE
-
-I would like to use a notebook (in project notebook folder) to see the analysis,  to help in notebook use a .py helper file under scripts folder. Include lot of debugging to see how data is being transformed from files to final dataframe for plotting. use a debug variable to be able to switch off when done.
 
 ***

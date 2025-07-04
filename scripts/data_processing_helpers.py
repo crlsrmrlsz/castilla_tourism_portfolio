@@ -170,3 +170,4 @@ def merge_and_prepare_data(df_ine, df_mobile, debug=False):
         df_merged.info()
 
     return df_merged
+
