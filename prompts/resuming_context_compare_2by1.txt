@@ -168,7 +168,7 @@ Project fodler structure is explained later in this prompt.
 
 #Result:
  The final result must be graphics comparing both datasets. One graphic for community level and other for the 5 cities.
- The graphics must compare total numbers and also differentiati age range and gender, to see how bothdataset match.
+ The graphics must compare total numbers and also differentiate age range and gender, to see how both dataset match.
  PLease generate one set of graphs for total numbers and other for gender, and other for date range.
  I think bar graphs are a good option, but please analyze any other option for representing these data.
 
