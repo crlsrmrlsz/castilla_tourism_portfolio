@@ -10,8 +10,8 @@ I will use mobile data in the future to create touristic dashboards for potentia
 #method
 I am comparing indicator by indicator to focus your intelligence on each case, one by one.
 I have already compared indicator for :
-- number of people spending night in castilla la mancha (ine hotel registers, vs mobile phones during night)
-- population, census in INE vs mobile phones of residents.
+- indicator 1: number of people spending night in castilla la mancha (ine hotel registers, vs mobile phones during night)
+- indicator 2: population, census in INE vs mobile phones of residents.
 
 A key point in mobile dataset is how each SIM card is categorized as a different type of visitor: resident, tourist, excursionist, and so on.
 The time spend on a place is used to cathegorize it and define type of visitor (categoriadelvisitante in spanish, as found in dataset).
@@ -64,8 +64,7 @@ We may assume that it is ok for tourists.
 
 
 # indicators to compare this time
-
-This time we will compare number of tourists in castilla la mancha, the whole community.
+indicator 3: This time we will compare number of tourists in castilla la mancha, the whole community.
 We have two datasets
 
 1.INE data:
@@ -156,60 +155,22 @@ Nuances of the comparison:
 
 
 #Result:
- The final result must be graphics comparing both datasets. One graphic for community level and other for the 5 cities.
- The graphics must compare total numbers and also differentiate age range and gender, to see how both dataset match.
- PLease generate one set of graphs for total numbers and other for gender, and other for date range.
+ The final result must be graphics comparing both datasets.
  I think bar graphs are a good option, but please analyze any other option for representing these data.
-
-
 
 #How:
 ***
 
-Please analyze the code files for the previous indicator, and generate the code and graphics in the same style and structure, reutilizing notebook and data_processing_helper.py.
+Please analyze the code files for the previous indicator, and generate the code and graphics in the same style and structure. Ensure the code is simple and clean and dont hesitate to do it better thatn the attached files if you can.
+I attach them just to enrich your context.
+
+indicator 1:
+-hotel_data_helpers.py
+-hotel_data_quality_check
+indicator 2:
+-population_data_helpers.py
+-population_data_quality_check
 Leave previous code unchanged.
-
- The project structure for the data is:
-
- data/analytics/
- ├── AB Albacete/
- │   ├── Diario_Mes_demographics_analysis.parquet
- │   ├── Diario_Mes_origin_analysis.parquet
- │   ├── NocheEstancia_demographics_analysis.parquet
- │   ├── NocheEstancia_origin_analysis.parquet
- │   ├── Nocturno_Mes_demographics_analysis.parquet
- │   └── Nocturno_Mes_origin_analysis.parquet
- ├── CCAA Castilla-La Mancha/
- │   ├── Diario_Mes_demographics_analysis.parquet
- │   ├── Diario_Mes_origin_analysis.parquet
- │   ├── NocheEstancia_demographics_analysis.parquet
- │   ├── NocheEstancia_origin_analysis.parquet
- │   ├── Nocturno_Mes_demographics_analysis.parquet
- │   └── Nocturno_Mes_origin_analysis.parquet
- ├── CR Ciudad Real/
- │   └── (contains the same .parquet files)
- ├── CU Cuenca/
- │   └── (contains the same .parquet files)
- ├── GU Guadalajara/
- │   └── (contains the same .parquet files)
- └── TO Toledo/
-     └── (contains the same .parquet files)
-
- and for public data:
-
- data/raw/ine_data/
- ├── ECP_CLM_2022_enero.csv
- ├── ECP_CLM_2023_enero.csv
- ├── ECP_CLM_2024_enero.csv
- ├── INE_AB_padron_genero_anual.csv
- ├── INE_CR_padron_genero_anual.csv
- ├── INE_CU_padron_genero_anual.csv
- ├── INE_EOH_Viajeros_pernoctaciones_mensual.csv
- ├── INE_FRONTUR_Total_anual_CLM.csv
- ├── INE_GU_padron_genero_anual.csv
- └── INE_TO_padron_genero_anual.csv
- -
-
 
  And this is the structure of my pycharm project:
 
@@ -237,7 +198,8 @@ Leave previous code unchanged.
  │   ├── 02_create_analysis_datasets.py
  │   ├── 03_validate_data.py
  │   ├── inspect_parquet.py
- │   └── data_processing_helpers.py
+ │   └── population_data_helpers.py
+ ...
  ├── site
  ├── visualizations
  ├── .gitignore
