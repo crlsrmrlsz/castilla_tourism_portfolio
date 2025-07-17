@@ -1,0 +1,246 @@
+#previous context
+I am resuming again the development of the code to contrast public official statistics against mobile phone anonymized data for tourism dataset in castilla la mancha, spain.
+
+#objective
+The objective is to compare two datasets with similar data, to ensure that mobile data is correct (may not be, as it is obtained extrapolating from operator's 30% market share (Orange) to total population, so it may have some assumption errors).
+The other dataset is data from INE in Spain, more reliable but does not contain the same exact indicators, there are subtle differences.
+I will use mobile data in the future to create touristic dashboards for potential customers and I want to know, and show the reliability of these mobile data by showing comparison graphics.
+
+
+#method
+I am comparing indicator by indicator to focus your intelligence on each case, one by one.
+I have already compared indicator for :
+- number of people spending night in castilla la mancha (ine hotel registers, vs mobile phones during night)
+- population, census in INE vs mobile phones of residents.
+
+A key point in mobile dataset is how each SIM card is categorized as a different type of visitor: resident, tourist, excursionist, and so on.
+The time spend on a place is used to cathegorize it and define type of visitor (categoriadelvisitante in spanish, as found in dataset).
+THe visitor types are these, as explained by mobile dataset provider:
+-----
+     * "Resident": A person who has spent more than 21 nights in the analyzed area over the last 8 weeks. In other words, someone is considered a resident of Gandía if their mobile phone was detected at night in Gandía at least 22 times in the last 56 nights (8 weeks).
+     Examples:
+     - Jorge lives and works in Valencia. He is counted as a resident of Valencia.
+     - Elena is a French teacher in Cartagena and spends every summer in Benidorm at her late grandmother’s house. Since she has two months of vacation, Elena will be counted as a resident around mid-summer.
+
+     * "Frequently Present": A person who spends fewer than 22 nights in the area over the last 8 weeks but has been detected at least once per week across 4 different weeks. In other words, someone is "frequently present" if they are observed in the area during four different weeks but with fewer than 22 total nights in the last 8 weeks.
+     Example:
+     - Laura is enrolled in a hybrid master's program in Valencia and stays overnight on Tuesdays and Thursdays in the Benimaclet neighborhood. Laura is considered "frequently present" in Benimaclet.
+
+     * "Tourist": Someone who spends fewer than 22 nights and is observed in fewer than 4 different weeks over the last 8 weeks.
+     Examples:
+     - Nuria is from Xàbia but went out for drinks in Dénia on Saturday and returned at 5 AM. Since she spent most of the night in Dénia, she is counted as a tourist in Dénia with an origin in Xàbia.
+     - Ivanna is from St. Petersburg and spends a couple of weeks each year in Torreblanca. She is considered a tourist.
+     - Miguel is from Dénia but works in Barcelona. When he returns for Christmas to spend time with his family, he is counted as a tourist in Dénia (with Dénia as his origin since that’s where his phone contract was registered).
+
+     * "Day Visitor" A person observed in the area during the day for more than 2 hours but not the night before or the night of the analysis. In other words, they are only seen during the day, with a presence exceeding 2 hours, but not recurrently.
+     Examples:
+     - Sofía is a sales representative for a pharmaceutical company and typically visits 2-3 towns to present new products or have lunch with clients. She is counted as a day visitor in towns where she doesn’t stay overnight and as a tourist where she does.
+     - Alberto is vacationing on the Levante coast, staying in Calpe for a few days, and decides to try a recommended restaurant in Altea. On the day he visits, he is counted as a day visitor in Altea.
+
+     * "Recurrent Day Visitor"*: A person present for more than 2 hours during the day on more than 5 days in the last 15. In other words, if someone visits the observed area more than 5 times in the last two weeks but only during the day (not overnight), they are a recurrent day visitor.
+     Examples:
+     - Isabel lives in Calpe but attends a school in Benidorm. She has classes Monday to Friday from 8:30 AM to 4:30 PM. During the school year, Isabel is a recurrent day visitor in Benidorm.
+     - Ismael is a dentist who lives and works in Xàtiva but collaborates 3 days a week with another clinic in Dénia. He is a recurrent day visitor in Dénia.
+
+     * "In Transit": A person observed in the area during the day for less than 2 hours and not seen the night before or the night of the analysis. In other words, they are passing through, differing from day visitors only in their shorter presence (<2 hours).
+     Examples:
+     - Marc works daily in Benidorm but is from Calpe. He picks up a coworker in Altea to carpool. Marc is counted as "in transit" in Altea.
+     - Enrique is a truck driver who stops at a Valencia gas station to refuel and have coffee. He is counted as "in transit" in Valencia.
+
+     * "Tourist/Frequently Present/Resident in Transit": A tourist, frequently present individual, or resident who spends less than 2 hours in the observation zone between 6 AM and 12 AM.
+
+    Clarifications:
+     - "Day Visitor," "Recurrent Day Visitor," and "In Transit" do not spend the night in the observation zone. All other categories do spend the night there.
+     - Any person present between 12 AM and 6 AM and "inactive" in the zone (predominantly in the observation area for more than 2 hours) is segmented as **Resident, Tourist, or Frequently Present**.
+     - The determination of Day Visitor (>2h) vs. In Transit (<2h) is based on activity between 6 AM and 12 PM.
+    -----
+
+
+#date range
+june 2022 to december 2024
+each dataset may contain different time aggregation, it is important to compare similar periods or aggregations.
+MObile data is aggregated by month. This is tricky, as it is obtained summing up data for each day, and that may be ok for tourists, but for residents for example, it sums the same people every day giving invalid results for monthl aggregation.
+We may assume that it is ok for tourists.
+
+
+# indicators to compare this time
+
+This time we will compare number of tourists in castilla la mancha, the whole community.
+We have two datasets
+
+1.INE data:
+* File Name: INE_FRONTUR_Total_tipoalojamiento_ES
+location in project structure:
+ data/raw/ine_data/
+ ├── INE_FRONTUR_Total_tipoalojamiento_ES.csv
+real data:
+Tipo de alojamiento	Periodo	Total
+Total de tipos de alojamiento	2024M12	5.264.375
+Total de tipos de alojamiento	2024M11	5.670.219
+Total de tipos de alojamiento	2024M10	8.961.932
+Total de tipos de alojamiento	2024M09	9.602.015
+Total de tipos de alojamiento	2024M08	10.929.584
+Total de tipos de alojamiento	2024M07	10.852.347
+Total de tipos de alojamiento	2024M06	9.299.574
+Total de tipos de alojamiento	2024M05	9.255.985
+Total de tipos de alojamiento	2024M04	7.783.750
+Total de tipos de alojamiento	2024M03	6.350.471
+Total de tipos de alojamiento	2024M02	5.013.497
+Total de tipos de alojamiento	2024M01	4.775.549
+Total de tipos de alojamiento	2023M12	5.209.085
+Total de tipos de alojamiento	2023M11	5.135.498
+Total de tipos de alojamiento	2023M10	8.187.022
+Total de tipos de alojamiento	2023M09	8.795.425
+Total de tipos de alojamiento	2023M08	10.186.163
+Total de tipos de alojamiento	2023M07	10.116.916
+Total de tipos de alojamiento	2023M06	8.307.460
+Total de tipos de alojamiento	2023M05	8.300.384
+Total de tipos de alojamiento	2023M04	7.228.094
+Total de tipos de alojamiento	2023M03	5.247.341
+Total de tipos de alojamiento	2023M02	4.320.665
+Total de tipos de alojamiento	2023M01	4.134.995
+Total de tipos de alojamiento	2022M12	4.127.293
+Total de tipos de alojamiento	2022M11	4.334.651
+Total de tipos de alojamiento	2022M10	7.176.984
+Total de tipos de alojamiento	2022M09	7.767.211
+Total de tipos de alojamiento	2022M08	8.848.665
+Total de tipos de alojamiento	2022M07	9.091.390
+Total de tipos de alojamiento	2022M06	7.498.156
+
+(the file contains different data depending of where people stay, but we will take just "Total de tipos de alojamiento"),
+The data is aggregated monthly.
+Thousand and million separators are '.'
+
+2. MOBILE DATA.
+
+* File Name: Diario_Mes_demographics_analysis.parquet, inside 'data\analytics\CCAA Castilla-La Mancha'
+* Description: monthly aggregated data of number of people , segmented by age, gender, origin and type of visitor (categoriadelvisitante)
+* Columns:
+    Date is in column "mes"
+    column "origen" is "Extranjero" for foreign, "Local" for people from Castilla La Mancha, and "NoLocal" people from the rest of Spain.
+    column "categoriadelvisitante" is important as contains the type of visitor.
+    date range columns (not used): ranges: <18, 18-24,25-34,35-44, 45-54, 55-64 , >65], , just for locals (people from Castilla La Mancha) and nolocals (people from spain but not castilla la mancha)
+    gender columns (not used): 'volumen_genero_h' (hombre), 'volumen_genero_m' (mujer), 'volumen_genero_nr' (not responding)
+    volumen_total: total of people
+
+* Example Data (from Diario_Mes_demographics_analysis.parquet):
+--- DataFrame Head ---
+	mes	etiquetadelmes	origen	categoriadelvisitante	volumen_total	volumen_edad_18-24	volumen_edad_25-34	volumen_edad_35-44	volumen_edad_45-54	volumen_edad_55-64	volumen_edad_65 o más volumen_edad_<18	volumen_genero_h	volumen_genero_m	volumen_genero_nr
+0	202206	2022 junio	Extranjero	En tránsito	58808	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+1	202206	2022 junio	Extranjero	Excursionista	6946	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+2	202206	2022 junio	Extranjero	Excursionista recurrente	2002	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+3	202206	2022 junio	Extranjero	Habitualmente presente	1107	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+4	202206	2022 junio	Extranjero	Habitualmente presente en tránsito	299	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+5	202206	2022 junio	Extranjero	Residente	9647	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+6	202206	2022 junio	Extranjero	Residente en tránsito	549	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+7	202206	2022 junio	Extranjero	Turista	15959	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+8	202206	2022 junio	Extranjero	Turista en tránsito	4768	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+9	202206	2022 junio	Local	En tránsito	100928	4305.0	9989.0	15315.0	17213.0	13254.0	12890.0	14285.0	54239.0	33006.0	NaN
+10	202206	2022 junio	Local	Excursionista	67455	2519.0	5814.0	9109.0	10840.0	9231.0	9785.0	8759.0	32061.0	23978.0	NaN
+11	202206	2022 junio	Local	Excursionista recurrente	107092	4631.0	11699.0	18387.0	18080.0	14263.0	11895.0	16016.0	57139.0	37808.0	24.0
+12	202206	2022 junio	Local	Habitualmente presente	79085	3927.0	7514.0	10713.0	13141.0	12151.0	12501.0	11926.0	40493.0	31338.0	42.0
+13	202206	2022 junio	Local	Habitualmente presente en tránsito	6756	185.0	380.0	697.0	1103.0	810.0	570.0	351.0	2088.0	2008.0	NaN
+14	202206	2022 junio	Local	Residente	3254137	197460.0	324715.0	490768.0	552516.0	438982.0	666906.0	563613.0	1770123.0	1464019.0	818.0
+15	202206	2022 junio	Local	Residente en tránsito	62430	3066.0	6019.0	9223.0	11522.0	8332.0	10171.0	10096.0	33539.0	24890.0	NaN
+16	202206	2022 junio	Local	Turista	26760	915.0	1950.0	2719.0	4236.0	3786.0	4008.0	3414.0	11808.0	9214.0	NaN
+17	202206	2022 junio	Local	Turista en tránsito	1982	21.0	143.0	177.0	246.0	250.0	237.0	37.0	639.0	472.0	NaN
+18	202206	2022 junio	NoLocal	En tránsito	1084558	34993.0	89809.0	146990.0	149784.0	117790.0	157006.0	133688.0	479347.0	350437.0	276.0
+19	202206	2022 junio	NoLocal	Excursionista	217343	4913.0	15245.0	26794.0	27126.0	20359.0	24668.0	15291.0	78442.0	55872.0	82.0
+
+Nuances of the comparison:
+***
+ Analyze if any other category should be used from mobile data, apart from tourist.
+ Mobile data distinguish between foreign and local and nolocal, but INE data is just for foreign people, so filter accordingly. Anyway search the web to see if FRONTUR data from INE is just for foreign people.
+
+***
+
+
+#Result:
+ The final result must be graphics comparing both datasets. One graphic for community level and other for the 5 cities.
+ The graphics must compare total numbers and also differentiate age range and gender, to see how both dataset match.
+ PLease generate one set of graphs for total numbers and other for gender, and other for date range.
+ I think bar graphs are a good option, but please analyze any other option for representing these data.
+
+
+
+#How:
+***
+
+Please analyze the code files for the previous indicator, and generate the code and graphics in the same style and structure, reutilizing notebook and data_processing_helper.py.
+Leave previous code unchanged.
+
+ The project structure for the data is:
+
+ data/analytics/
+ ├── AB Albacete/
+ │   ├── Diario_Mes_demographics_analysis.parquet
+ │   ├── Diario_Mes_origin_analysis.parquet
+ │   ├── NocheEstancia_demographics_analysis.parquet
+ │   ├── NocheEstancia_origin_analysis.parquet
+ │   ├── Nocturno_Mes_demographics_analysis.parquet
+ │   └── Nocturno_Mes_origin_analysis.parquet
+ ├── CCAA Castilla-La Mancha/
+ │   ├── Diario_Mes_demographics_analysis.parquet
+ │   ├── Diario_Mes_origin_analysis.parquet
+ │   ├── NocheEstancia_demographics_analysis.parquet
+ │   ├── NocheEstancia_origin_analysis.parquet
+ │   ├── Nocturno_Mes_demographics_analysis.parquet
+ │   └── Nocturno_Mes_origin_analysis.parquet
+ ├── CR Ciudad Real/
+ │   └── (contains the same .parquet files)
+ ├── CU Cuenca/
+ │   └── (contains the same .parquet files)
+ ├── GU Guadalajara/
+ │   └── (contains the same .parquet files)
+ └── TO Toledo/
+     └── (contains the same .parquet files)
+
+ and for public data:
+
+ data/raw/ine_data/
+ ├── ECP_CLM_2022_enero.csv
+ ├── ECP_CLM_2023_enero.csv
+ ├── ECP_CLM_2024_enero.csv
+ ├── INE_AB_padron_genero_anual.csv
+ ├── INE_CR_padron_genero_anual.csv
+ ├── INE_CU_padron_genero_anual.csv
+ ├── INE_EOH_Viajeros_pernoctaciones_mensual.csv
+ ├── INE_FRONTUR_Total_anual_CLM.csv
+ ├── INE_GU_padron_genero_anual.csv
+ └── INE_TO_padron_genero_anual.csv
+ -
+
+
+ And this is the structure of my pycharm project:
+
+ castilla_tourism_portfolio
+ ├── data
+ │   ├── analytics
+ │   ├── processed
+ │   └── raw
+ ├── notebooks
+ │   ├── .ipynb_checkpoints
+ │   ├── describe_data_quality_check.ipynb
+ │   └── inspect_parquet.ipynb
+ ├── output
+ ├── prompts
+ │   ├── data description.txt
+ │   ├── description_ine_files.txt
+ │   ├── description_mobile_files_qa_check.txt
+ │   ├── description_parquet_files.txt
+ │   ├── From Mobility to Municipality_ A Strategic Blueprint for Monetizing
+ │   ├── improved_prompt_gemini_1.txt
+ │   ├── resuming_context_compare.txt
+ │   └── resuming_context_compare_1by1.txt
+ ├── scripts
+ │   ├── 01_merge_and_convert.py
+ │   ├── 02_create_analysis_datasets.py
+ │   ├── 03_validate_data.py
+ │   ├── inspect_parquet.py
+ │   └── data_processing_helpers.py
+ ├── site
+ ├── visualizations
+ ├── .gitignore
+ └── LICENSE
+
+***
