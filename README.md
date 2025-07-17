@@ -19,7 +19,7 @@ Provides monthly data on travelers (`viajeros`) who stayed in hotels, broken dow
 
 ### 3. Yearly Population Data (National INE Padrón)
 Provides official, annual population figures from the Municipal Register. This is the source for yearly resident numbers for specific cities or the entire community.
-- **Link:** [INE - Population by Municipality, Sex, and Year](https://www.ine.es/jaxiT3/Tabla.htm?t=2861)
+- **Link:** [INE - Population by Municipality, Sex, and Year](https://www.ine.es/jaxiT3/Tabla.htm?t=2902&L=0)
 
 ### 4. Quarterly Population Data (Regional - Castilla-La Mancha)
 Provides more frequent (quarterly) population data at the provincial level for Castilla-La Mancha, including data for 2024.
