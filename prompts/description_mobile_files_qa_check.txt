@@ -44,7 +44,7 @@ These files are the most crucial for comparing against official population and t
 
 ---
 
-### SET 2: Monthly Daytime Population (`Diario` Files)
+### SET 2: Monthly Daytime Population (`Diario` Files) ( Difficutl to compare to FRONTUR, better use arrivals and sum up, Diario sums same person several days...)
 
 These files describe the total unique population present during the day, which is naturally larger than the overnight population as it includes commuters and day-trippers.
 
