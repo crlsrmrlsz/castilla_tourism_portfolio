@@ -7,13 +7,7 @@ import os
 def load_ine_frontur_data(file_path, debug=False):
     """
     Loads and processes the annual INE FRONTUR data for international tourists.
-
-    Args:
-        file_path (str): The path to the INE FRONTUR CSV file.
-        debug (bool): If True, prints debugging information.
-
-    Returns:
-        pandas.DataFrame: A DataFrame with processed INE data (Year, Tourists).
+    (This function remains unchanged)
     """
     if debug:
         print(f"--- Loading INE FRONTUR Data from: {file_path} ---")
@@ -31,104 +25,108 @@ def load_ine_frontur_data(file_path, debug=False):
         print(f"Error loading INE FRONTUR data: {e}")
         return pd.DataFrame()
 
-    # Clean up and rename columns for consistency
-    df.rename(columns={
-        'Periodo': 'year',
-        'Total': 'tourists_ine'
-    }, inplace=True)
-
-    # Ensure 'tourists_ine' is a numeric type
+    df.rename(columns={'Periodo': 'year', 'Total': 'tourists_ine'}, inplace=True)
     df['tourists_ine'] = pd.to_numeric(df['tourists_ine'], errors='coerce')
-
-    # Filter for the relevant region and columns
     df_clm = df[df['Comunidades autónomas'].str.contains("Castilla - La Mancha", na=False)].copy()
-
     final_df = df_clm[['year', 'tourists_ine']].reset_index(drop=True)
 
     if debug:
         print("\n--- Processed INE FRONTUR DataFrame ---")
         print(final_df.head())
-        print(final_df.info())
-
     return final_df
 
 
 def load_mobile_tourist_data(file_path, debug=False):
     """
-    Loads and processes mobile data for international tourists and frequently present visitors.
-
-    Args:
-        file_path (str): The path to the mobile data Parquet file.
-        debug (bool): If True, prints debugging information.
-
-    Returns:
-        pandas.DataFrame: A DataFrame with annually aggregated mobile data.
+    Loads and processes mobile data for international tourists,
+    extrapolating partial years based on 2023's seasonality.
     """
     if debug:
         print(f"--- Loading Mobile Tourist Data from: {file_path} ---")
 
     try:
         df = pd.read_parquet(file_path)
-        if debug:
-            print("Mobile data Parquet loaded successfully.")
     except Exception as e:
         print(f"Error loading mobile data: {e}")
         return pd.DataFrame()
 
-    # Ensure fecha is datetime
     df['fecha'] = pd.to_datetime(df['fecha'])
     df['year'] = df['fecha'].dt.year
+    df['month'] = df['fecha'].dt.month
 
-    # Filter for international visitors who stay overnight
-    # This includes 'Turista' and 'Habitualmente presente' (Frequently Present)
     overnight_categories = ['Turista', 'Habitualmente presente']
     df_filtered = df[
         (df['origen'] == 'Extranjero') &
         (df['categoriadelvisitante'].isin(overnight_categories))
         ].copy()
 
-    if debug:
-        print(f"\nFiltered for 'Extranjero' origin and categories: {overnight_categories}")
+    # Get monthly totals for all years
+    monthly_totals = df_filtered.groupby(['year', 'month', 'categoriadelvisitante'])['volumen_total'].sum().unstack(
+        fill_value=0).reset_index()
+    monthly_totals['total'] = monthly_totals['Turista'] + monthly_totals.get('Habitualmente presente', 0)
 
-    # Aggregate daily data to get annual totals
-    df_agg = df_filtered.groupby(['year', 'categoriadelvisitante'])['volumen_total'].sum().reset_index()
-
-    # Pivot the table to have visitor categories as columns
-    df_pivot = df_agg.pivot_table(
-        index='year',
-        columns='categoriadelvisitante',
-        values='volumen_total',
-        fill_value=0
-    ).reset_index()
-
-    # Rename columns for clarity
-    df_pivot.rename(columns={
-        'Turista': 'tourists_mobile',
-        'Habitualmente presente': 'frequent_present_mobile'
-    }, inplace=True)
-
-    # Calculate total mobile visitors for comparison
-    df_pivot['total_tourists_mobile'] = df_pivot['tourists_mobile'] + df_pivot['frequent_present_mobile']
+    # --- Step 1: Calculate Seasonality Weights from 2023 data ---
+    df_2023 = monthly_totals[monthly_totals['year'] == 2023]
+    if df_2023.empty or len(df_2023) < 12:
+        print("Warning: Full 2023 data not available to create seasonal profile. Extrapolation may be inaccurate.")
+        seasonality_weights = pd.Series([1 / 12] * 12, index=range(1, 13))  # Fallback to equal weights
+    else:
+        total_2023 = df_2023['total'].sum()
+        seasonality_weights = df_2023.groupby('month')['total'].sum() / total_2023
 
     if debug:
-        print("\n--- Processed Mobile Tourist DataFrame (Annual) ---")
-        print(df_pivot.head())
-        print(df_pivot.info())
+        print("\n--- 2023 Seasonality Weights ---")
+        print(seasonality_weights)
 
-    return df_pivot
+    # --- Step 2: Process each year, extrapolating if data is incomplete ---
+    annual_results = []
+    for year, group in monthly_totals.groupby('year'):
+        available_months = group['month'].unique()
+        actual_sum_tourists = group['Turista'].sum()
+        actual_sum_frequent = group.get('Habitualmente presente', 0).sum()
+
+        # An incomplete year is one that doesn't have all 12 months of data
+        is_complete = (len(available_months) == 12)
+
+        if is_complete or year == 2023:
+            extrapolated_tourists = actual_sum_tourists
+            extrapolated_frequent = actual_sum_frequent
+            note = "Complete Year"
+        else:
+            # Sum the weights for the months we have data for
+            weight_of_available_months = seasonality_weights.loc[available_months].sum()
+
+            if weight_of_available_months > 0:
+                extrapolation_factor = 1 / weight_of_available_months
+                extrapolated_tourists = actual_sum_tourists * extrapolation_factor
+                extrapolated_frequent = actual_sum_frequent * extrapolation_factor
+                note = f"Extrapolated from {len(available_months)} months"
+            else:
+                extrapolated_tourists = actual_sum_tourists
+                extrapolated_frequent = actual_sum_frequent
+                note = "Warning: No seasonal data for months"
+
+        annual_results.append({
+            'year': year,
+            'tourists_mobile': extrapolated_tourists,
+            'frequent_present_mobile': extrapolated_frequent,
+            'note': note
+        })
+
+    final_df = pd.DataFrame(annual_results)
+    final_df['total_tourists_mobile'] = final_df['tourists_mobile'] + final_df['frequent_present_mobile']
+
+    if debug:
+        print("\n--- Processed & Extrapolated Mobile Tourist DataFrame (Annual) ---")
+        print(final_df)
+
+    return final_df
 
 
 def merge_tourist_data(df_ine, df_mobile, debug=False):
     """
     Merges the processed INE and mobile tourist dataframes on the 'year' column.
-
-    Args:
-        df_ine (pandas.DataFrame): The processed INE data.
-        df_mobile (pandas.DataFrame): The processed mobile data.
-        debug (bool): If True, prints debugging information.
-
-    Returns:
-        pandas.DataFrame: A merged DataFrame ready for visualization.
+    (This function remains unchanged)
     """
     if not df_ine.empty and not df_mobile.empty:
         df_merged = pd.merge(df_ine, df_mobile, on='year', how='inner')
