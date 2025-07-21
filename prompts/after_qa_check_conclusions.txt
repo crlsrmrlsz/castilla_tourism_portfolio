@@ -1,0 +1,58 @@
+I have done a comparative of data from two different sources about visitors to Castilla La Mancha, Spain, and its province capitals.
+One dataset is obtained from public sources, INE mainly, and contains data of people staying in hotels (INE Hotel occupancy), foreign visitors (INE FRONTUR) and population (Census).
+This data is compared to a dataset obtained from mobile phone operator (Orange, which has approximately 30% market share).
+The comparison is very tricky as both datasets contains different data not directly comparable.
+You can check in INE website the definition of the mentioned datasets, and census is a universal concept.
+In mobile dataset people (sim cards) are segmented by origin (by address of registration, allow to distinguish if card is registered in castilla la mancha, any other part of Spain, or which foreign coutry).
+Main segmentation in mobile is by location and time behavior of the phone, and contains these categories.
+--VisitorCategory--
+Along all the data files, there is a common column in almost every file, the VisitorCategory. This is the classification:
+
+* "Resident": A person who has spent more than 21 nights in the analyzed area over the last 8 weeks. In other words, someone is considered a resident of Gandía if their mobile phone was detected at night in Gandía at least 22 times in the last 56 nights (8 weeks).
+Examples:
+- Jorge lives and works in Valencia. He is counted as a resident of Valencia.
+- Elena is a French teacher in Cartagena and spends every summer in Benidorm at her late grandmother’s house. Since she has two months of vacation, Elena will be counted as a resident around mid-summer.
+
+* "Frequently Present": A person who spends fewer than 22 nights in the area over the last 8 weeks but has been detected at least once per week across 4 different weeks. In other words, someone is "frequently present" if they are observed in the area during four different weeks but with fewer than 22 total nights in the last 8 weeks.
+Example:
+- Laura is enrolled in a hybrid master's program in Valencia and stays overnight on Tuesdays and Thursdays in the Benimaclet neighborhood. Laura is considered "frequently present" in Benimaclet.
+
+* "Tourist": Someone who spends fewer than 22 nights and is observed in fewer than 4 different weeks over the last 8 weeks.
+Examples:
+- Nuria is from Xàbia but went out for drinks in Dénia on Saturday and returned at 5 AM. Since she spent most of the night in Dénia, she is counted as a tourist in Dénia with an origin in Xàbia.
+- Ivanna is from St. Petersburg and spends a couple of weeks each year in Torreblanca. She is considered a tourist.
+- Miguel is from Dénia but works in Barcelona. When he returns for Christmas to spend time with his family, he is counted as a tourist in Dénia (with Dénia as his origin since that’s where his phone contract was registered).
+
+* "Day Visitor" A person observed in the area during the day for more than 2 hours but not the night before or the night of the analysis. In other words, they are only seen during the day, with a presence exceeding 2 hours, but not recurrently.
+Examples:
+- Sofía is a sales representative for a pharmaceutical company and typically visits 2-3 towns to present new products or have lunch with clients. She is counted as a day visitor in towns where she doesn’t stay overnight and as a tourist where she does.
+- Alberto is vacationing on the Levante coast, staying in Calpe for a few days, and decides to try a recommended restaurant in Altea. On the day he visits, he is counted as a day visitor in Altea.
+
+* "Recurrent Day Visitor"*: A person present for more than 2 hours during the day on more than 5 days in the last 15. In other words, if someone visits the observed area more than 5 times in the last two weeks but only during the day (not overnight), they are a recurrent day visitor.
+Examples:
+- Isabel lives in Calpe but attends a school in Benidorm. She has classes Monday to Friday from 8:30 AM to 4:30 PM. During the school year, Isabel is a recurrent day visitor in Benidorm.
+- Ismael is a dentist who lives and works in Xàtiva but collaborates 3 days a week with another clinic in Dénia. He is a recurrent day visitor in Dénia.
+
+* "In Transit": A person observed in the area during the day for less than 2 hours and not seen the night before or the night of the analysis. In other words, they are passing through, differing from day visitors only in their shorter presence (<2 hours).
+Examples:
+- Marc works daily in Benidorm but is from Calpe. He picks up a coworker in Altea to carpool. Marc is counted as "in transit" in Altea.
+- Enrique is a truck driver who stops at a Valencia gas station to refuel and have coffee. He is counted as "in transit" in Valencia.
+
+* "Tourist/Frequently Present/Resident in Transit": A tourist, frequently present individual, or resident who spends less than 2 hours in the observation zone between 6 AM and 12 AM.
+
+### Clarifications:
+- "Day Visitor," "Recurrent Day Visitor," and "In Transit" do not spend the night in the observation zone. All other categories do spend the night there.
+- Any person present between 12 AM and 6 AM and "inactive" in the zone (predominantly in the observation area for more than 2 hours) is segmented as **Resident, Tourist, or Frequently Present**.
+- The determination of Day Visitor (>2h) vs. In Transit (<2h) is based on activity between 6 AM and 12 PM.
+--VisitorCategory--
+
+The results of the comparison are included in the attached graphics.
+Please analyze the differences of both datasets and extract clear conclusions about what can i use mobile dataset for.
+I was intending to use it for data analysis for tourism, but given the big differences between INE and mobile data for this, I have lots of concerns about its validity.
+Population comparison is more similar, but don't know what to use it for.
+Mobile data origin (by country) seems to have some interest, but I don't see how to use it as cannot use it as clear tourist exclusive data.
+
+Please chek any other similar projects to inspect if results are reliable, if this data is really useful and for what.
+This info will be used to decide is a potential business of data analytics with the mobile data can have any chance.
+Be critic and realistic in your analysis. And dont create a very extensive report.
+
